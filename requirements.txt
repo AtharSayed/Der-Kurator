@@ -1,0 +1,9 @@
+# requirements.txt
+sentence-transformers
+faiss-cpu
+python-docx
+pypdf
+python-pptx
+ollama
+streamlit
+streamlit-chat

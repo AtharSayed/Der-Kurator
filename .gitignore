@@ -1,0 +1,22 @@
+# gitignore file
+# Ignore Python cache files
+__pycache__/
+*.pyc
+# Ignore virtual environment directories
+venv/
+env/
+# Ignore data directories
+data/raw/
+data/processed/
+# Ignore embeddings and vector store
+embeddings/vector_store/
+# Ignore logs
+logs/
+logs/
+*.log
+# Ignore system files
+.DS_Store
+Thumbs.db
+# Ignore IDE specific files
+.vscode/
+.idea/
