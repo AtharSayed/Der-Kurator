@@ -1,28 +1,36 @@
-# rag/qa.py
-import faiss, pickle
-from sentence_transformers import SentenceTransformer
 import ollama
-from rag.prompt import PROMPT_TEMPLATE
+from rag.retriever import Retriever
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
-index = faiss.read_index("embeddings/vector_store/index.faiss")
-chunks, metadata = pickle.load(open("embeddings/vector_store/data.pkl", "rb"))
+# Initialize retriever once (important for performance)
+retriever = Retriever(top_k=5)
 
-def ask(question, k=3):
-    q_emb = model.encode([question])
-    _, idx = index.search(q_emb, k)
+def ask(question: str) -> str:
+    """
+    Answer a question using retrieved Porsche 911 context.
+    """
+    context = retriever.build_context(question)
 
-    context = "\n\n".join([chunks[i] for i in idx[0]])
+    if not context.strip():
+        return "I don’t know based on the provided Porsche 911 documents."
 
-    prompt = PROMPT_TEMPLATE.format(
-        context=context,
-        question=question
-    )
+    prompt = f"""
+You are a Porsche 911 knowledge assistant.
+
+Use ONLY the information in the context below to answer.
+If the answer is not present, say you don't know.
+
+Context:
+{context}
+
+Question:
+{question}
+
+Answer:
+"""
 
     response = ollama.chat(
         model="mistral:7b-instruct-q4_0",
         messages=[{"role": "user", "content": prompt}]
     )
-
 
     return response["message"]["content"]
