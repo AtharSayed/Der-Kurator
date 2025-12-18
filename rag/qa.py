@@ -1,36 +1,47 @@
 import ollama
 from rag.retriever import Retriever
+from rag.prompt import PROMPT_TEMPLATE
 
 # Initialize retriever once (important for performance)
 retriever = Retriever(top_k=5)
 
-def ask(question: str) -> str:
+def ask(question: str) -> dict:
     """
-    Answer a question using retrieved Porsche 911 context.
+    Returns:
+        {
+            "answer": str,
+            "citations": list[dict]
+        }
     """
+
+    # 1. Retrieve context
     context = retriever.build_context(question)
 
+    # 2. Handle empty retrieval (safety)
     if not context.strip():
-        return "I don’t know based on the provided Porsche 911 documents."
+        return {
+            "answer": "I don't know based on the provided Porsche 911 documents.",
+            "citations": []
+        }
 
-    prompt = f"""
-You are a Porsche 911 knowledge assistant.
+    # 3. Build prompt using centralized template
+    prompt = PROMPT_TEMPLATE.format(
+        context=context,
+        question=question
+    )
 
-Use ONLY the information in the context below to answer.
-If the answer is not present, say you don't know.
-
-Context:
-{context}
-
-Question:
-{question}
-
-Answer:
-"""
-
+    # 4. Call LLM
     response = ollama.chat(
         model="mistral:7b-instruct-q4_0",
         messages=[{"role": "user", "content": prompt}]
     )
 
-    return response["message"]["content"]
+    answer = response["message"]["content"]
+
+    # 5. Collect citations
+    citations = retriever.get_citations(question)
+
+    return {
+        "answer": answer,
+        "citations": citations
+    }
