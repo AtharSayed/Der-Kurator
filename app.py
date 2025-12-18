@@ -11,33 +11,29 @@ st.set_page_config(
 )
 
 # =====================================================
-# Minimal Premium Styling
+# Global Styling (SAFE – no widget wrapping)
 # =====================================================
 st.markdown(
     """
     <style>
-    body {
-        background-color: #ffffff;
-    }
     .title {
         font-size: 36px;
         font-weight: 700;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
     }
     .subtitle {
         font-size: 16px;
         color: #6b7280;
-        margin-bottom: 28px;
+        margin-bottom: 24px;
     }
-    .card {
+    .section-label {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+    .answer-box {
         background-color: #f9fafb;
-        padding: 22px;
-        border-radius: 14px;
-        border: 1px solid #e5e7eb;
-    }
-    .answer-card {
-        background-color: #ffffff;
-        padding: 22px;
+        padding: 20px;
         border-radius: 14px;
         border: 1px solid #e5e7eb;
         margin-top: 24px;
@@ -45,7 +41,7 @@ st.markdown(
         line-height: 1.6;
     }
     .footer {
-        margin-top: 40px;
+        margin-top: 48px;
         text-align: center;
         font-size: 13px;
         color: #9ca3af;
@@ -60,7 +56,7 @@ st.markdown(
 # =====================================================
 st.markdown('<div class="title">Porsche 911 Knowledge Assistant</div>', unsafe_allow_html=True)
 st.markdown(
-    '<div class="subtitle">Accurate answers sourced directly from official Porsche 911 documents</div>',
+    '<div class="subtitle">Accurate answers sourced directly from verified Porsche 911 documents</div>',
     unsafe_allow_html=True
 )
 
@@ -68,27 +64,25 @@ st.markdown(
 # Trust Message (Client-Friendly)
 # =====================================================
 st.success(
-    "✔️ This assistant provides answers based only on verified Porsche 911 documentation. "
+    "✔️ This assistant answers questions using only curated Porsche 911 documentation. "
     "If information is unavailable, it will clearly state so."
 )
 
 # =====================================================
-# Question Input
+# Question Input (NO HTML WRAPPING)
 # =====================================================
-st.markdown('<div class="card">', unsafe_allow_html=True)
+st.markdown('<div class="section-label">Ask a question</div>', unsafe_allow_html=True)
 
 question = st.text_input(
-    "Ask a question",
+    "Porsche 911 Question",
     placeholder="e.g. What is the difference between the Porsche 911 Carrera and GT3?",
     label_visibility="collapsed"
 )
 
 ask_btn = st.button("Get Answer", use_container_width=True)
 
-st.markdown('</div>', unsafe_allow_html=True)
-
 # =====================================================
-# Answer Output (No Chat History)
+# Answer Output
 # =====================================================
 if ask_btn:
     if not question.strip():
@@ -97,18 +91,18 @@ if ask_btn:
         with st.spinner("Finding the most accurate answer..."):
             answer = ask(question)
 
-        st.markdown('<div class="answer-card">', unsafe_allow_html=True)
+        st.markdown('<div class="answer-box">', unsafe_allow_html=True)
         st.markdown("**Answer**")
         st.write(answer)
         st.markdown('</div>', unsafe_allow_html=True)
 
 # =====================================================
-# Footer (No Tech Jargon)
+# Footer
 # =====================================================
 st.markdown(
     """
     <div class="footer">
-    Porsche 911 Knowledge Assistant · Designed for clarity & accuracy
+    Porsche 911 Knowledge Assistant · Designed for clarity, accuracy, and trust
     </div>
     """,
     unsafe_allow_html=True
