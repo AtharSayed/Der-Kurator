@@ -23,7 +23,7 @@ def ask(question: str) -> dict:
     best_similarity = retrieved[0]["score"]
 
     is_spec_question = any(k in question.lower() for k in SPEC_KEYWORDS)
-    effective_threshold = 0.45 if is_spec_question else 0.50
+    effective_threshold = 0.50 if is_spec_question else 0.55
 
     if best_similarity < effective_threshold:
         return {
@@ -38,7 +38,8 @@ def ask(question: str) -> dict:
     try:
         response = ollama.chat(
             model="mistral:7b-instruct-q4_0",
-            messages=[{"role": "user", "content": prompt}]
+            messages=[{"role": "user", "content": prompt}],
+            options={"temperature": 0.0, "max_tokens": 512}
         )
         answer = response["message"]["content"].strip()
     except Exception as e:

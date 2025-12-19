@@ -4,8 +4,8 @@
     "mrr": 1.0
   },
   "end_to_end": {
-    "context_relevance": 0.8833333333333333,
-    "faithfulness": 0.6333333333333333,
-    "answer_relevance": 0.46666666666666673
+    "context_relevance": 0.6166666666666667,
+    "faithfulness": 0.7166666666666668,
+    "answer_relevance": 0.6
   }
 }
