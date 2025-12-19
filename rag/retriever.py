@@ -2,7 +2,7 @@ import os
 import pickle
 import faiss
 from sentence_transformers import SentenceTransformer
-from typing import List, Dict, Tuple
+from typing import List, Dict
 
 # -------------------------------------------------
 # Resolve project paths safely
@@ -24,14 +24,17 @@ DATA_FILE = os.path.join(VECTOR_STORE_PATH, "data.pkl")
 class Retriever:
     """
     Handles semantic retrieval over the FAISS vector store.
+    Responsible ONLY for retrieval quality, not generation.
     """
 
     def __init__(
         self,
         embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2",
-        top_k: int = 5
+        top_k: int = 5,
+        min_chunk_length: int = 100
     ):
         self.top_k = top_k
+        self.min_chunk_length = min_chunk_length
 
         # Load embedding model
         self.embedder = SentenceTransformer(embedding_model)
@@ -54,25 +57,37 @@ class Retriever:
     # -------------------------------------------------
     def retrieve(self, query: str) -> List[Dict]:
         """
-        Retrieve the most relevant chunks for a query.
+        Retrieve the most relevant, content-worthy chunks for a query.
 
         Returns:
             List of dicts with:
             - content
             - metadata
-            - score
+            - score (FAISS distance)
         """
         query_embedding = self.embedder.encode([query])
-
         distances, indices = self.index.search(query_embedding, self.top_k)
 
         results = []
+        seen_chunks = set()
+
         for score, idx in zip(distances[0], indices[0]):
             if idx == -1:
                 continue
 
+            content = self.chunks[idx].strip()
+
+            # 🚫 Filter weak / meaningless chunks
+            if len(content) < self.min_chunk_length:
+                continue
+
+            # 🚫 De-duplicate identical content
+            if content in seen_chunks:
+                continue
+            seen_chunks.add(content)
+
             results.append({
-                "content": self.chunks[idx],
+                "content": content,
                 "metadata": self.metadata[idx],
                 "score": float(score)
             })
@@ -84,22 +99,21 @@ class Retriever:
     # -------------------------------------------------
     def build_context(self, query: str) -> str:
         """
-        Builds a clean context string from retrieved chunks.
+        Builds a clean, ordered context string from retrieved chunks.
         """
         retrieved_chunks = self.retrieve(query)
 
-        context_blocks = []
-        for item in retrieved_chunks:
-            context_blocks.append(item["content"])
+        if not retrieved_chunks:
+            return ""
 
-        return "\n\n".join(context_blocks)
+        return "\n\n".join(item["content"] for item in retrieved_chunks)
 
     # -------------------------------------------------
-    # Citation Helper (Future-Ready)
+    # Citation Helper
     # -------------------------------------------------
     def get_citations(self, query: str) -> List[Dict]:
         """
-        Extract citation info from retrieved chunks.
+        Extract citation information from retrieved chunks.
         """
         retrieved_chunks = self.retrieve(query)
 

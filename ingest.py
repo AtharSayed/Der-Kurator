@@ -1,19 +1,22 @@
 # ingest.py
 import os
+import copy
+import numpy as np
 from sentence_transformers import SentenceTransformer
 import faiss
 import pickle
 
-
 from loaders.txt_loader import TxtLoader
 from loaders.docx_loader import DocxLoader
-from loaders.pdf_loader import PdfLoader
+from loaders.pdf_loader import PdfLoader  # Now uses PyMuPDF internally
 from loaders.pptx_loader import PptxLoader
 from preprocessing.cleaner import clean_text
 from preprocessing.chunker import chunk_text
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
+# Better embedding model with stronger semantic understanding
+model = SentenceTransformer("all-mpnet-base-v2")
 
+# Map file extensions to loaders
 loaders = {
     ".txt": TxtLoader(),
     ".docx": DocxLoader(),
@@ -24,26 +27,54 @@ loaders = {
 all_chunks = []
 all_metadata = []
 
-for file in os.listdir("data/raw"):
-    ext = os.path.splitext(file)[1]
+raw_data_path = "data/raw"
+for file in os.listdir(raw_data_path):
+    file_path = os.path.join(raw_data_path, file)
+    ext = os.path.splitext(file)[1].lower()
+
     loader = loaders.get(ext)
+    if not loader:
+        print(f"Skipping unsupported file: {file}")
+        continue
 
-    if loader:
-        docs = loader.load(f"data/raw/{file}")
-        for d in docs:
-            clean = clean_text(d["content"])
-            chunks = chunk_text(clean)
-            for c in chunks:
-                all_chunks.append(c)
-                all_metadata.append(d["metadata"])
+    print(f"Processing {file}...")
+    docs = loader.load(file_path)
 
-embeddings = model.encode(all_chunks, show_progress_bar=True)
+    for doc in docs:
+        cleaned_text = clean_text(doc["content"])
+        if not cleaned_text:
+            continue
 
+        chunks = chunk_text(cleaned_text, max_chunk_size=800, sentence_overlap=2)
 
-index = faiss.IndexFlatL2(embeddings.shape[1])
-index.add(embeddings)
+        for chunk_idx, chunk in enumerate(chunks):
+            all_chunks.append(chunk)
+            # Deep copy metadata and add chunk-specific info
+            metadata = copy.deepcopy(doc["metadata"])
+            metadata["chunk_index"] = chunk_idx
+            metadata["chunk_char_count"] = len(chunk)
+            all_metadata.append(metadata)
 
+print(f"Generated {len(all_chunks)} chunks from {len(os.listdir(raw_data_path))} files.")
+
+# Encode chunks in batches for efficiency and memory
+embeddings = model.encode(
+    all_chunks,
+    batch_size=64,
+    show_progress_bar=True,
+    normalize_embeddings=True  # Directly normalize for cosine similarity
+)
+
+# Use Inner Product (equivalent to cosine on normalized vectors)
+dimension = embeddings.shape[1]
+index = faiss.IndexFlatIP(dimension)
+index.add(embeddings.astype('float32'))
+
+# Save vector store and metadata
+os.makedirs("embeddings/vector_store", exist_ok=True)
 
 faiss.write_index(index, "embeddings/vector_store/index.faiss")
-pickle.dump((all_chunks, all_metadata), open("embeddings/vector_store/data.pkl", "wb"))
-print("Ingestion complete. Vector store and data saved.")
+with open("embeddings/vector_store/data.pkl", "wb") as f:
+    pickle.dump((all_chunks, all_metadata), f)
+
+print("Ingestion complete! Vector store and metadata saved.")

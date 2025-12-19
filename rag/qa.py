@@ -2,35 +2,38 @@ import ollama
 from rag.retriever import Retriever
 from rag.prompt import PROMPT_TEMPLATE
 
-# Initialize retriever once (important for performance)
 retriever = Retriever(top_k=5)
 
+MAX_DISTANCE_THRESHOLD = 0.55   # relaxed slightly
+SPEC_KEYWORDS = ["torque", "hp", "power", "nm", "lb-ft", "bhp"]
+
 def ask(question: str) -> dict:
-    """
-    Returns:
-        {
-            "answer": str,
-            "citations": list[dict]
-        }
-    """
+    retrieved = retriever.retrieve(question)
 
-    # 1. Retrieve context
-    context = retriever.build_context(question)
-
-    # 2. Handle empty retrieval (safety)
-    if not context.strip():
+    if not retrieved:
         return {
             "answer": "I don't know based on the provided Porsche 911 documents.",
             "citations": []
         }
 
-    # 3. Build prompt using centralized template
+    best_score = retrieved[0]["score"]
+
+    # 🔒 Smarter gate
+    is_spec_question = any(k in question.lower() for k in SPEC_KEYWORDS)
+
+    if best_score > MAX_DISTANCE_THRESHOLD and not is_spec_question:
+        return {
+            "answer": "I don't know based on the provided Porsche 911 documents.",
+            "citations": []
+        }
+
+    context = "\n\n".join(r["content"] for r in retrieved)
+
     prompt = PROMPT_TEMPLATE.format(
         context=context,
         question=question
     )
 
-    # 4. Call LLM
     response = ollama.chat(
         model="mistral:7b-instruct-q4_0",
         messages=[{"role": "user", "content": prompt}]
@@ -38,10 +41,14 @@ def ask(question: str) -> dict:
 
     answer = response["message"]["content"]
 
-    # 5. Collect citations
-    citations = retriever.get_citations(question)
+    # 🚫 Final safety: model still refused
+    if "i don't know" in answer.lower():
+        return {
+            "answer": "I don't know based on the provided Porsche 911 documents.",
+            "citations": []
+        }
 
     return {
         "answer": answer,
-        "citations": citations
+        "citations": retriever.get_citations(question)
     }

@@ -1,15 +1,18 @@
 # loaders/pdf_loader.py
-from pypdf import PdfReader
+import fitz  # PyMuPDF
 from loaders.base_loader import BaseLoader
 
 class PdfLoader(BaseLoader):
     def load(self, file_path):
-        reader = PdfReader(file_path)
+        """
+        Extract text from each page using PyMuPDF for higher quality and speed.
+        """
+        doc = fitz.open(file_path)
         documents = []
 
-        for i, page in enumerate(reader.pages):
-            text = page.extract_text()
-            if text:
+        for i, page in enumerate(doc):
+            text = page.get_text("text")  # Plain text, preserves reading order better
+            if text and text.strip():
                 documents.append({
                     "content": text.strip(),
                     "metadata": {
@@ -19,4 +22,6 @@ class PdfLoader(BaseLoader):
                         "index": i + 1
                     }
                 })
+
+        doc.close()
         return documents

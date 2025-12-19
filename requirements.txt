@@ -2,8 +2,9 @@
 sentence-transformers
 faiss-cpu
 python-docx
-pypdf
 python-pptx
+pymupdf                  # Superior PDF text extraction (replaces pypdf)
 ollama
 streamlit
 streamlit-chat
+torch                    # Required by sentence-transformers (often needed explicitly)
