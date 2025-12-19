@@ -1,0 +1,126 @@
+PORSCHE 911 — TECHNICAL SPECIFICATIONS + COMPARISON (TXT)
+Generated: 18 Dec 2025 (Asia/Kolkata)
+Note: Specs vary by market, tires, options, test method (0–60 vs 0–100), and model-year updates.
+==============================================================================
+1) PORSCHE 911 (KEY TRIMS)
+==============================================================================
+Porsche 911 Carrera (992.2, base)
+  Layout / Engine : Rear-engine, twin-turbo flat-6 (boxer)
+  Drivetrain      : RWD
+  Transmission    : 8-speed PDK (dual-clutch)
+  Power           : 388 hp (289 kW)
+  Torque          : 331 lb-ft (449 Nm)
+  0–60 mph         : 3.9 s
+  Top speed        : 183 mph (295 km/h)
+  Notes           : Porsche USA quoted figures (with summer tires).
+
+Porsche 911 Carrera GTS (992.2, T-Hybrid)
+  Layout / Engine : Rear-engine, hybrid-assisted turbo flat-6 (T-Hybrid)
+  Drivetrain      : RWD/AWD (varies by variant)
+  Transmission    : PDK (dual-clutch)
+  Power           : 541 PS (398 kW)
+  Torque          : 610 Nm
+  0–100 km/h       : 3.0 s
+  Top speed        : 312 km/h (194 mph)
+  Notes           : International Porsche figures shown as PS/Nm and 0–100 km/h.
+
+Porsche 911 Turbo S (992.2, T-Hybrid)
+  Layout / Engine : Rear-engine, hybrid-assisted turbo flat-6 (T-Hybrid)
+  Drivetrain      : AWD
+  Transmission    : 8-speed PDK (dual-clutch)
+  Power           : 701 hp (523 kW)
+  Torque          : 590 lb-ft (800 Nm)
+  0–60 mph         : 2.4 s
+  Top speed        : 200 mph (322 km/h)
+  Notes           : Latest Turbo S announced with T-Hybrid; torque from press coverage.
+
+Porsche 911 GT3 (992.2 / 2026 model year on Porsche USA)
+  Layout / Engine : Rear-engine, naturally aspirated 4.0L flat-6
+  Drivetrain      : RWD
+  Transmission    : 7-speed PDK or 6-speed manual (market/option dependent)
+  Power           : 502 hp (374 kW)
+  Torque          : 331 lb-ft (449 Nm)
+  0–60 mph         : 3.2 s
+  Top speed        : 193 mph (311 km/h)
+  Notes           : Porsche USA headline figures.
+
+==============================================================================
+2) RIVAL CARS (SPEC HIGHLIGHTS)
+==============================================================================
+Chevrolet Corvette Stingray (C8, 2025)
+  Layout / Engine : Mid-engine, naturally aspirated 6.2L V8
+  Drivetrain      : RWD
+  Transmission    : 8-speed dual-clutch
+  Power           : 495 hp (369 kW)
+  Torque          : 470 lb-ft (637 Nm)
+  0–60 mph         : 2.9 s
+  Top speed        : 194 mph (312 km/h)
+  Curb weight      : 3366 lb (1527 kg)
+  Notes           : Top speed/hp/0-60 from Chevrolet; weight/torque from MotorTrend (optional exhaust).
+
+Chevrolet Corvette Z06 (C8, 2025/2026)
+  Layout / Engine : Mid-engine, naturally aspirated 5.5L V8 (flat-plane crank)
+  Drivetrain      : RWD
+  Transmission    : 8-speed dual-clutch
+  Power           : 670 hp (500 kW)
+  Torque          : 460 lb-ft (624 Nm)
+  0–60 mph         : 2.6 s
+  Top speed        : 189 mph (304 km/h)
+  Curb weight      : 3500 lb (1588 kg)
+  Notes           : Power/weight from MotorTrend; 0-60 & top speed (mfr claim) from Car and Driver.
+
+Nissan GT-R (R35, final-era spec)
+  Layout / Engine : Front mid-engine, twin-turbo 3.8L V6
+  Drivetrain      : AWD
+  Transmission    : 6-speed dual-clutch
+  Power           : 565 hp (421 kW)
+  Torque          : 467 lb-ft (633 Nm)
+  0–60 mph         : 2.9 s
+  Top speed        : 197 mph (317 km/h)
+  Notes           : Power/torque/0-60 from Car and Driver (2024 review text); top speed from GT-R overview table source.
+
+Lamborghini Huracán Tecnica
+  Layout / Engine : Mid-engine, naturally aspirated 5.2L V10
+  Drivetrain      : RWD
+  Transmission    : 7-speed dual-clutch
+  Power           : 640 CV (471 kW)
+  0–100 km/h       : 3.2 s
+  Top speed        : 325 km/h (202 mph)
+  Notes           : Official Lamborghini technical specs.
+
+McLaren Artura (Hybrid)
+  Layout / Engine : Mid-engine, twin-turbo V6 + electric motor (PHEV)
+  Drivetrain      : RWD
+  Transmission    : 8-speed dual-clutch
+  Power           : 690 bhp (515 kW)
+  Torque          : 531 lb-ft (720 Nm)
+  Top speed        : 205 mph (330 km/h)
+  Notes           : Official McLaren facts & figures.
+
+Aston Martin Vantage (latest)
+  Layout / Engine : Front-engine, twin-turbo 4.0L V8
+  Drivetrain      : RWD
+  Transmission    : 8-speed automatic
+  Power           : 670 bhp (500 kW)
+  Torque          : 800 Nm
+  0–100 km/h       : 3.5 s
+  Top speed        : 202 mph (325 km/h)
+  Notes           : Official Aston Martin performance figures.
+
+==============================================================================
+3) QUICK COMPARISON MATRIX (PERFORMANCE-FACING SPECS)
+==============================================================================
+Car                                          | Power           | Torque          | 0-60/0-100 | Top Speed
+------------------------------------------------------------------------------
+Porsche 911 Carrera (992.2, base)            | 388 hp          | 331 lb-ft       | 3.9s 0-60  | 183 mph  
+Porsche 911 Carrera GTS (992.2, T-Hybrid)    | 541 PS          | 610 Nm          | 3.0s 0-100 | 312 km/h 
+Porsche 911 Turbo S (992.2, T-Hybrid)        | 701 hp          | 590 lb-ft       | 2.4s 0-60  | 200 mph  
+Porsche 911 GT3 (992.2 / 2026 model year on  | 502 hp          | 331 lb-ft       | 3.2s 0-60  | 193 mph  
+Chevrolet Corvette Stingray (C8, 2025)       | 495 hp          | 470 lb-ft       | 2.9s 0-60  | 194 mph  
+Chevrolet Corvette Z06 (C8, 2025/2026)       | 670 hp          | 460 lb-ft       | 2.6s 0-60  | 189 mph  
+Nissan GT-R (R35, final-era spec)            | 565 hp          | 467 lb-ft       | 2.9s 0-60  | 197 mph  
+Lamborghini Huracán Tecnica                  | 640 CV          | —               | 3.2s 0-100 | 325 km/h 
+McLaren Artura (Hybrid)                      | 690 bhp         | 531 lb-ft       | —          | 205 mph  
+Aston Martin Vantage (latest)                | 670 bhp         | 800 Nm          | 3.5s 0-100 | 202 mph  
+
+END OF FILE

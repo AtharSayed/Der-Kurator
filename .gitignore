@@ -5,9 +5,6 @@ __pycache__/
 # Ignore virtual environment directories
 venv/
 env/
-# Ignore data directories
-data/raw/
-data/processed/
 # Ignore embeddings and vector store
 embeddings/vector_store/
 # Ignore logs
