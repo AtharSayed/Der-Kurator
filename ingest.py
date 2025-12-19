@@ -8,15 +8,14 @@ import pickle
 
 from loaders.txt_loader import TxtLoader
 from loaders.docx_loader import DocxLoader
-from loaders.pdf_loader import PdfLoader  # Now uses PyMuPDF internally
+from loaders.pdf_loader import PdfLoader
 from loaders.pptx_loader import PptxLoader
 from preprocessing.cleaner import clean_text
 from preprocessing.chunker import chunk_text
 
-# Better embedding model with stronger semantic understanding
+# Better embedding model
 model = SentenceTransformer("all-mpnet-base-v2")
 
-# Map file extensions to loaders
 loaders = {
     ".txt": TxtLoader(),
     ".docx": DocxLoader(),
@@ -28,6 +27,8 @@ all_chunks = []
 all_metadata = []
 
 raw_data_path = "data/raw"
+os.makedirs(raw_data_path, exist_ok=True)
+
 for file in os.listdir(raw_data_path):
     file_path = os.path.join(raw_data_path, file)
     ext = os.path.splitext(file)[1].lower()
@@ -37,8 +38,12 @@ for file in os.listdir(raw_data_path):
         print(f"Skipping unsupported file: {file}")
         continue
 
-    print(f"Processing {file}...")
-    docs = loader.load(file_path)
+    try:
+        print(f"Processing {file}...")
+        docs = loader.load(file_path)
+    except Exception as e:
+        print(f"Error loading {file}: {str(e)}")
+        continue
 
     for doc in docs:
         cleaned_text = clean_text(doc["content"])
@@ -49,7 +54,6 @@ for file in os.listdir(raw_data_path):
 
         for chunk_idx, chunk in enumerate(chunks):
             all_chunks.append(chunk)
-            # Deep copy metadata and add chunk-specific info
             metadata = copy.deepcopy(doc["metadata"])
             metadata["chunk_index"] = chunk_idx
             metadata["chunk_char_count"] = len(chunk)
@@ -57,24 +61,24 @@ for file in os.listdir(raw_data_path):
 
 print(f"Generated {len(all_chunks)} chunks from {len(os.listdir(raw_data_path))} files.")
 
-# Encode chunks in batches for efficiency and memory
-embeddings = model.encode(
-    all_chunks,
-    batch_size=64,
-    show_progress_bar=True,
-    normalize_embeddings=True  # Directly normalize for cosine similarity
-)
+if all_chunks:
+    embeddings = model.encode(
+        all_chunks,
+        batch_size=64,
+        show_progress_bar=True,
+        normalize_embeddings=True
+    )
 
-# Use Inner Product (equivalent to cosine on normalized vectors)
-dimension = embeddings.shape[1]
-index = faiss.IndexFlatIP(dimension)
-index.add(embeddings.astype('float32'))
+    dimension = embeddings.shape[1]
+    index = faiss.IndexFlatIP(dimension)
+    index.add(embeddings.astype('float32'))
 
-# Save vector store and metadata
-os.makedirs("embeddings/vector_store", exist_ok=True)
+    os.makedirs("embeddings/vector_store", exist_ok=True)
 
-faiss.write_index(index, "embeddings/vector_store/index.faiss")
-with open("embeddings/vector_store/data.pkl", "wb") as f:
-    pickle.dump((all_chunks, all_metadata), f)
+    faiss.write_index(index, "embeddings/vector_store/index.faiss")
+    with open("embeddings/vector_store/data.pkl", "wb") as f:
+        pickle.dump((all_chunks, all_metadata), f)
 
-print("Ingestion complete! Vector store and metadata saved.")
+    print("Ingestion complete! Vector store saved.")
+else:
+    print("No chunks generated. Check your data files.")

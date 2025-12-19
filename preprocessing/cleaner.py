@@ -2,22 +2,22 @@
 import re
 
 def clean_text(text: str) -> str:
-    """
-    Clean raw extracted text for better embedding quality.
-    """
     if not text:
         return ""
 
-    # Remove non-printable characters except common whitespace
+    # Remove non-printable
     text = ''.join(c for c in text if c.isprintable() or c in '\n\t ')
 
-    # Normalize whitespace (multiple spaces, newlines, tabs → single space)
+    # Normalize whitespace
     text = re.sub(r'\s+', ' ', text)
 
-    # Optional: remove URLs if they are noisy (uncomment if needed)
-    # text = re.sub(r'http[s]?://\S+', '', text)
+    # Remove repeated punctuation/symbols (e.g., ----- or ****)
+    text = re.sub(r'([^\w\s])\1{2,}', r'\1', text)
 
-    # Trim leading/trailing punctuation that stands alone
+    # Optional: remove isolated numbers/symbols if noisy
+    # text = re.sub(r'\b\d+\b', '', text)  # Uncomment if numbers are noise
+
+    # Trim leading/trailing punctuation
     text = re.sub(r'^[^\w\s]+|[^\w\s]+$', '', text)
 
     return text.strip()
