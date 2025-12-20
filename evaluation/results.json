@@ -1,11 +1,11 @@
 {
   "retrieval": {
     "hit_rate": 1.0,
-    "mrr": 1.0
+    "mrr": 0.9166666666666666
   },
   "end_to_end": {
     "context_relevance": 0.6166666666666667,
-    "faithfulness": 0.7166666666666668,
-    "answer_relevance": 0.6
+    "faithfulness": 0.9,
+    "answer_relevance": 0.7166666666666668
   }
 }

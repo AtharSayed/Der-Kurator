@@ -1,12 +1,21 @@
 # evaluation/evaluate.py
+
+import sys
+from pathlib import Path
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT_DIR))
+
 import json
 import time
+import re
+import ollama
+
 from rag.qa import ask
 from rag.retriever import Retriever
 from evaluation.dataset import EVAL_QUESTIONS
-import ollama
 
-retriever = Retriever(top_k=8, min_similarity=0.45, min_chunk_length=10)
+retriever = Retriever(top_k=8, min_similarity=0.45, min_chunk_length=60)
 
 def llm_judge(prompt: str) -> float:
     """Use Ollama (Mistral or Llama3) as judge — returns score 0.0 to 1.0"""
