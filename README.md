@@ -111,15 +111,12 @@ Offline evaluation is performed using:
 
 ```json
 {
-  "retrieval": {
-    "hit_rate": 1.0,
-    "mrr": 0.9167
-  },
-  "end_to_end": {
-    "context_relevance": 0.6167,
-    "faithfulness": 0.90,
-    "answer_relevance": 0.7167
+  "summary": {
+    "abstention_rate": 0.5,
+    "grounded_sentence_rate": 1.0,
+    "avg_relevance": 0.75,
+    "avg_specificity": 0.85,
+    "avg_faithfulness": 1.0
   }
-}
 ```
 
