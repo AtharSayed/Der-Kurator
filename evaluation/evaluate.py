@@ -1,120 +1,230 @@
 # evaluation/evaluate.py
+# Scalable, behavior-based RAG evaluation
+# Does NOT rely on gold answers
 
 import sys
-from pathlib import Path
-
-ROOT_DIR = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT_DIR))
-
 import json
 import time
 import re
+from pathlib import Path
 import ollama
+
+# ---------------------------------------------------------
+# Project path setup
+# ---------------------------------------------------------
+ROOT_DIR = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT_DIR))
 
 from rag.qa import ask
 from rag.retriever import Retriever
 from evaluation.dataset import EVAL_QUESTIONS
 
-retriever = Retriever(top_k=8, min_similarity=0.45, min_chunk_length=60)
+# ---------------------------------------------------------
+# Retriever configuration
+# ---------------------------------------------------------
+retriever = Retriever(
+    top_k=8,
+    min_similarity=0.45,
+    min_chunk_length=60
+)
 
-def llm_judge(prompt: str) -> float:
-    """Use Ollama (Mistral or Llama3) as judge — returns score 0.0 to 1.0"""
+# ---------------------------------------------------------
+# Utility helpers
+# ---------------------------------------------------------
+def tokenize(text: str):
+    return set(re.findall(r"\b\w+\b", text.lower()))
+
+def extract_sentences(text: str):
+    return [s.strip() for s in text.split(".") if len(s.strip()) > 10]
+
+# ---------------------------------------------------------
+# Abstention detection
+# ---------------------------------------------------------
+def is_abstention(answer: str) -> bool:
+    patterns = [
+        "i don't know",
+        "not found",
+        "not provided",
+        "no information",
+        "cannot determine",
+        "based on the provided"
+    ]
+    a = answer.lower()
+    return any(p in a for p in patterns)
+
+# ---------------------------------------------------------
+# Grounding check (token overlap)
+# ---------------------------------------------------------
+def grounded_sentence(sentence: str, context: str, min_overlap: int = 3) -> bool:
+    s_tokens = tokenize(sentence)
+    c_tokens = tokenize(context)
+    return len(s_tokens & c_tokens) >= min_overlap
+
+# ---------------------------------------------------------
+# LLM behavioral judge (NOT fact correctness)
+# ---------------------------------------------------------
+def llm_behavior_judge(question: str, answer: str, context: str) -> dict:
+    """
+    Evaluates BEHAVIOR, not factual correctness.
+    """
+    prompt = f"""
+You are evaluating the behavior of a RAG system.
+
+Question:
+{question}
+
+Answer:
+{answer}
+
+Context:
+{context[:2500]}
+
+Evaluate ONLY these aspects (score 0–1):
+1. Relevance: Does the answer address the question?
+2. Specificity: Is the answer as specific as the context allows?
+3. Faithfulness: Does the answer avoid adding unsupported information?
+
+Return JSON only:
+{{"relevance": x, "specificity": y, "faithfulness": z}}
+"""
     try:
-        response = ollama.chat(
-            model="mistral:7b-instruct-q4_0",  # or llama3:8b
+        resp = ollama.chat(
+            model="mistral:7b-instruct-q4_0",
             messages=[{"role": "user", "content": prompt}]
         )
-        text = response["message"]["content"].strip()
-        # Extract score if model outputs number
-        import re
-        match = re.search(r"(\d+\.?\d*)", text)
-        if match:
-            return min(1.0, max(0.0, float(match.group(1)) / 10.0))  # assume 0-10 scale
-        return 0.5  # fallback
-    except:
-        return 0.5
+        text = resp["message"]["content"]
+        scores = json.loads(text)
+        return {
+            "relevance": float(scores.get("relevance", 0.5)),
+            "specificity": float(scores.get("specificity", 0.5)),
+            "faithfulness": float(scores.get("faithfulness", 0.5)),
+        }
+    except Exception:
+        return {"relevance": 0.5, "specificity": 0.5, "faithfulness": 0.5}
 
+# ---------------------------------------------------------
+# Retrieval evaluation (answerability proxy)
+# ---------------------------------------------------------
 def evaluate_retrieval():
-    print("Running Retrieval Evaluation...\n")
     hits = 0
-    mrr = 0.0
+
     for item in EVAL_QUESTIONS:
         question = item["question"]
-        keywords = item["expected_keywords"]
         results = retriever.retrieve(question)
-        
-        relevant = False
-        first_rank = None
-        for rank, r in enumerate(results, 1):
-            content_lower = r["content"].lower()
-            if any(kw.lower() in content_lower for kw in keywords):
-                relevant = True
-                if first_rank is None:
-                    first_rank = rank
-                break
-        
-        if relevant:
-            hits += 1
-            mrr += 1.0 / first_rank
-    
-    hit_rate = hits / len(EVAL_QUESTIONS)
-    mrr_score = mrr / len(EVAL_QUESTIONS)
-    
-    print(f"Retrieval Hit Rate: {hit_rate:.3f}")
-    print(f"Retrieval MRR:       {mrr_score:.3f}\n")
-    return {"hit_rate": hit_rate, "mrr": mrr_score}
 
+        # Proxy: at least one chunk has overlap with question
+        q_tokens = tokenize(question)
+        found = False
+        for r in results:
+            if len(tokenize(r["content"]) & q_tokens) >= 2:
+                found = True
+                break
+
+        if found:
+            hits += 1
+
+    return {
+        "context_coverage_rate": hits / len(EVAL_QUESTIONS)
+    }
+
+# ---------------------------------------------------------
+# End-to-End Evaluation (Behavior + Grounding)
+# ---------------------------------------------------------
 def evaluate_end_to_end():
-    print("Running End-to-End RAG Evaluation (LLM-as-Judge)...\n")
-    scores = {"context_relevance": [], "faithfulness": [], "answer_relevance": []}
-    
+    print("Running Scalable End-to-End RAG Evaluation...\n")
+
+    detailed = []
+
+    grounded_sentences_total = 0
+    sentences_total = 0
+    abstentions = 0
+
+    relevance_scores = []
+    specificity_scores = []
+    faithfulness_scores = []
+
     for item in EVAL_QUESTIONS:
         question = item["question"]
-        result = ask(question)
-        answer = result["answer"]
+        response = ask(question)
+        answer = response.get("answer", "").strip()
         context = retriever.build_context(question)
-        
-        # 1. Context Relevance
-        cr_prompt = f"""
-        Rate how relevant the retrieved context is to the question on a scale of 1-10.
-        Question: {question}
-        Context: {context[:3000]}
-        Score only:"""
-        scores["context_relevance"].append(llm_judge(cr_prompt))
-        
-        # 2. Faithfulness (does answer stick to context?)
-        faith_prompt = f"""
-        Rate how faithfully the answer uses ONLY information from the context (no hallucination) on a scale of 1-10.
-        Context: {context[:3000]}
-        Answer: {answer}
-        Score only:"""
-        scores["faithfulness"].append(llm_judge(faith_prompt))
-        
-        # 3. Answer Relevance
-        rel_prompt = f"""
-        Rate how well the answer directly and completely answers the question on a scale of 1-10.
-        Question: {question}
-        Answer: {answer}
-        Score only:"""
-        scores["answer_relevance"].append(llm_judge(rel_prompt))
-        
-        time.sleep(0.5)  # Be nice to Ollama
-    
-    avg_scores = {k: sum(v)/len(v) for k, v in scores.items()}
-    for k, v in avg_scores.items():
-        print(f"{k.replace('_', ' ').title()}: {v:.3f}")
-    
-    return avg_scores
 
+        abstained = is_abstention(answer)
+        if abstained:
+            abstentions += 1
+
+        # -------------------------------
+        # Grounding analysis
+        # -------------------------------
+        answer_sentences = extract_sentences(answer)
+        grounded_count = 0
+
+        for s in answer_sentences:
+            if grounded_sentence(s, context):
+                grounded_count += 1
+
+        grounded_sentences_total += grounded_count
+        sentences_total += len(answer_sentences)
+
+        # -------------------------------
+        # Behavioral LLM judge
+        # -------------------------------
+        judge_scores = llm_behavior_judge(question, answer, context)
+
+        relevance_scores.append(judge_scores["relevance"])
+        specificity_scores.append(judge_scores["specificity"])
+        faithfulness_scores.append(judge_scores["faithfulness"])
+
+        detailed.append({
+            "id": item["id"],
+            "question": question,
+            "answer": answer,
+            "abstained": abstained,
+            "grounded_sentence_ratio":
+                grounded_count / len(answer_sentences) if answer_sentences else 1.0,
+            "relevance": judge_scores["relevance"],
+            "specificity": judge_scores["specificity"],
+            "faithfulness": judge_scores["faithfulness"],
+            "source_hint": item.get("source_hint", "unknown")
+        })
+
+        time.sleep(0.3)
+
+    # -------------------------------
+    # Aggregate metrics
+    # -------------------------------
+    summary = {
+        "abstention_rate": abstentions / len(EVAL_QUESTIONS),
+        "grounded_sentence_rate":
+            grounded_sentences_total / sentences_total if sentences_total else 1.0,
+        "avg_relevance": sum(relevance_scores) / len(relevance_scores),
+        "avg_specificity": sum(specificity_scores) / len(specificity_scores),
+        "avg_faithfulness": sum(faithfulness_scores) / len(faithfulness_scores)
+    }
+
+    output_path = Path("evaluation/detailed_results.json")
+    output_path.parent.mkdir(exist_ok=True)
+
+    with open(output_path, "w") as f:
+        json.dump({"summary": summary, "details": detailed}, f, indent=2)
+
+    print("\n=== End-to-End Evaluation Summary ===")
+    print(json.dumps(summary, indent=2))
+    print(f"\nDetailed results saved to {output_path}")
+
+    return summary
+
+# ---------------------------------------------------------
+# Main
+# ---------------------------------------------------------
 if __name__ == "__main__":
     retrieval_metrics = evaluate_retrieval()
     e2e_metrics = evaluate_end_to_end()
-    
-    all_metrics = {"retrieval": retrieval_metrics, "end_to_end": e2e_metrics}
-    print("\n=== Final RAG Evaluation Scores ===")
-    print(json.dumps(all_metrics, indent=2))
-    
-    # Save for tracking improvement over time
-    with open("evaluation/results.json", "w") as f:
-        json.dump(all_metrics, f, indent=2)
-    print("\nResults saved to evaluation/results.json")
+
+    final = {
+        "retrieval": retrieval_metrics,
+        "end_to_end": e2e_metrics
+    }
+
+    print("\n=== FINAL SCALABLE RAG EVALUATION ===")
+    print(json.dumps(final, indent=2))

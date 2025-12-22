@@ -1,28 +1,49 @@
 # evaluation/dataset.py
+
 EVAL_QUESTIONS = [
     {
+        "id": "Q1",
         "question": "What is the horsepower of the Porsche 911 Turbo S?",
-        "expected_keywords": ["turbo s", "horsepower", "hp", "653", "640"],  # adjust based on your docs
+        "answer_type": "numeric",
+        "expected_facts": {
+            "horsepower": [640, 653, 701]  # market & generation dependent
+        },
+        "numeric_tolerance": 5,
+        "must_mention": ["turbo s"],
+        "optional_mentions": ["hp", "ps", "kw"],
+        "source_hint": "technical specifications"
     },
     {
-        "question": "What is the top speed of the Porsche 911 GT3 RS?",
-        "expected_keywords": ["gt3 rs", "top speed", "mph", "km/h", "205"],
+        "id": "Q2",
+        "question": "When was the Porsche 911 (992 generation) introduced?",
+        "answer_type": "date",
+        "expected_facts": {
+            "year": [2018, 2019]
+        },
+        "must_mention": ["992"],
+        "source_hint": "press kit"
     },
     {
-        "question": "How much downforce does the GT3 RS wing generate?",
-        "expected_keywords": ["downforce", "wing", "kg", "lb", "gt3 rs"],
-    },
-    {
+        "id": "Q3",
         "question": "What engine is used in the Porsche 911 Carrera?",
-        "expected_keywords": ["carrera", "engine", "twin-turbo", "flat-six", "3.0"],
+        "answer_type": "descriptive",
+        "expected_facts": {
+            "engine": ["twin-turbo flat-six", "boxer"]
+        },
+        "must_mention": ["carrera"],
+        "optional_mentions": ["3.0", "flat-6"],
+        "source_hint": "technical specifications"
     },
     {
-        "question": "What is the 0-60 mph time for the 911 Turbo S?",
-        "expected_keywords": ["0-60", "turbo s", "seconds", "2.6", "2.7"],
-    },
-    {
-        "question": "When was the 992 generation introduced?",
-        "expected_keywords": ["992", "introduced", "2019", "generation"],
-    },
-    # Add 10–20 more questions covering your documents
+        "id": "Q4",
+        "question": "What is the top speed of the Porsche 911 GT3?",
+        "answer_type": "numeric",
+        "expected_facts": {
+            "top_speed_mph": [193],
+            "top_speed_kmh": [311]
+        },
+        "numeric_tolerance": 3,
+        "must_mention": ["gt3"],
+        "source_hint": "technical specifications"
+    }
 ]

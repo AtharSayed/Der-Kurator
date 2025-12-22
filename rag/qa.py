@@ -37,7 +37,7 @@ def ask(question: str) -> dict:
 
     try:
         response = ollama.chat(
-            model="mistral:7b-instruct-q4_0",
+            model="mistral:7b-instruct-q4_0",    # (1min + response time)
             messages=[{"role": "user", "content": prompt}],
             options={"temperature": 0.0, "max_tokens": 512}
         )

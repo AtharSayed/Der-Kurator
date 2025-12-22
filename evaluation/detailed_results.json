@@ -1,0 +1,55 @@
+{
+  "summary": {
+    "abstention_rate": 0.5,
+    "grounded_sentence_rate": 1.0,
+    "avg_relevance": 0.75,
+    "avg_specificity": 0.85,
+    "avg_faithfulness": 1.0
+  },
+  "details": [
+    {
+      "id": "Q1",
+      "question": "What is the horsepower of the Porsche 911 Turbo S?",
+      "answer": "The Porsche 911 Turbo S (992.2, T-Hybrid) has a horsepower output of 701 hp.",
+      "abstained": false,
+      "grounded_sentence_ratio": 1.0,
+      "relevance": 1.0,
+      "specificity": 1.0,
+      "faithfulness": 1.0,
+      "source_hint": "technical specifications"
+    },
+    {
+      "id": "Q2",
+      "question": "When was the Porsche 911 (992 generation) introduced?",
+      "answer": "I don't know based on the provided Porsche 911 documents.",
+      "abstained": true,
+      "grounded_sentence_ratio": 1.0,
+      "relevance": 1.0,
+      "specificity": 0.5,
+      "faithfulness": 1.0,
+      "source_hint": "press kit"
+    },
+    {
+      "id": "Q3",
+      "question": "What engine is used in the Porsche 911 Carrera?",
+      "answer": "The Porsche 911 Carrera (992.2, base) uses a twin-turbo flat-six engine with an induction system and a displacement of 3.0 liters.",
+      "abstained": false,
+      "grounded_sentence_ratio": 1.0,
+      "relevance": 1.0,
+      "specificity": 0.9,
+      "faithfulness": 1.0,
+      "source_hint": "technical specifications"
+    },
+    {
+      "id": "Q4",
+      "question": "What is the top speed of the Porsche 911 GT3?",
+      "answer": "I don't know based on the provided Porsche 911 documents.",
+      "abstained": true,
+      "grounded_sentence_ratio": 1.0,
+      "relevance": 0.0,
+      "specificity": 1.0,
+      "faithfulness": 1.0,
+      "source_hint": "technical specifications"
+    }
+  ]
+}
