@@ -21,7 +21,7 @@ The system prioritizes **faithfulness, accuracy, and traceability**, making it s
 
 The following diagram illustrates the end-to-end architecture of **Der Kurator**
 
-![Der Kurator System Design](data\images\Der-Kurator System Design RAG.png)
+![Der Kurator System Diagram](data/images/Der-Kurator%20System%20Design%20RAG.png)
 
 ---
 
