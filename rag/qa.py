@@ -4,30 +4,37 @@ from rag.retriever import Retriever
 from rag.prompt import PROMPT_TEMPLATE
 
 retriever = Retriever(
-    top_k=8,
-    min_similarity=0.50,  # Balanced for precision
-    min_chunk_length=50
+    top_k=9,
+    min_similarity=0.44,
+    min_chunk_length=50,
+    variant_boost=0.18
 )
 
-SPEC_KEYWORDS = ["torque", "hp", "horsepower", "power", "nm", "lb-ft", "bhp", "kw", "acceleration", "top speed", "0-60", "0-100"]
+SPEC_KEYWORDS = ["torque", "hp", "horsepower", "power", "nm", "lb-ft", "bhp", "kw",
+                 "acceleration", "top speed", "0-60", "0-100", "0 to ", "weight"]
+
+REFUSAL_PHRASES = [
+    "i don't know", "not mentioned", "not in the documents", "no information",
+    "unable to find", "cannot answer", "not provided", "no data"
+]
 
 def ask(question: str) -> dict:
     retrieved = retriever.retrieve(question)
 
     if not retrieved:
         return {
-            "answer": "I don't know based on the provided Porsche 911 documents.",
+            "answer": "I don't know — no relevant information found in the Porsche 911 documents.",
             "citations": []
         }
 
-    best_similarity = retrieved[0]["score"]
+    best_score = retrieved[0]["score"]
 
-    is_spec_question = any(k in question.lower() for k in SPEC_KEYWORDS)
-    effective_threshold = 0.50 if is_spec_question else 0.55
+    is_spec = any(k in question.lower() for k in SPEC_KEYWORDS)
+    threshold = 0.38 if is_spec else 0.45
 
-    if best_similarity < effective_threshold:
+    if best_score < threshold:
         return {
-            "answer": "I don't know based on the provided Porsche 911 documents.",
+            "answer": "I don't know — insufficient confidence or no clear match in documents.",
             "citations": []
         }
 
@@ -37,21 +44,25 @@ def ask(question: str) -> dict:
 
     try:
         response = ollama.chat(
-            model="mistral:7b-instruct-q4_0",    # (1min + response time)
+            model="mistral:7b-instruct-q4_0",
             messages=[{"role": "user", "content": prompt}],
-            options={"temperature": 0.0, "max_tokens": 512}
+            options={"temperature": 0.0, "max_tokens": 700}
         )
         answer = response["message"]["content"].strip()
     except Exception as e:
-        answer = "Error generating answer: " + str(e)
+        return {"answer": f"Error: {str(e)}", "citations": []}
 
-    if "i don't know" in answer.lower() or "not mentioned" in answer.lower():
+    # Stronger refusal detection
+    if any(phrase in answer.lower() for phrase in REFUSAL_PHRASES):
         return {
             "answer": "I don't know based on the provided Porsche 911 documents.",
             "citations": []
         }
 
+    citations = retriever.get_citations(retrieved)
+
     return {
         "answer": answer,
-        "citations": retriever.get_citations(question)
+        "citations": citations,
+        "best_score": round(best_score, 3)
     }

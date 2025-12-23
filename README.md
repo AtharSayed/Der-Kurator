@@ -16,6 +16,15 @@ The system prioritizes **faithfulness, accuracy, and traceability**, making it s
 
 ---
 
+---
+##  System Architecture (Overview)
+
+The following diagram illustrates the end-to-end architecture of **Der Kurator**
+
+![Der Kurator System Design](data\images\Der-Kurator System Design RAG.png)
+
+---
+
 ## 📁 Project Structure
 ```bash
 atharsayed-der-kurator/

@@ -1,10 +1,14 @@
 {
   "summary": {
-    "abstention_rate": 0.5,
-    "grounded_sentence_rate": 1.0,
-    "avg_relevance": 0.75,
-    "avg_specificity": 0.85,
-    "avg_faithfulness": 1.0
+    "abstention_rate": 0.25,
+    "grounded_sentence_rate": 0.9565217391304348,
+    "avg_fact_coverage": 0.5,
+    "total_hallucinations": 8,
+    "avg_relevance": 0.875,
+    "avg_specificity": 0.9375,
+    "avg_faithfulness": 0.9875,
+    "avg_completeness": 0.9249999999999999,
+    "avg_conciseness": 0.9375
   },
   "details": [
     {
@@ -13,9 +17,13 @@
       "answer": "The Porsche 911 Turbo S (992.2, T-Hybrid) has a horsepower output of 701 hp.",
       "abstained": false,
       "grounded_sentence_ratio": 1.0,
+      "fact_coverage": 1.0,
+      "hallucination_flags": [],
       "relevance": 1.0,
       "specificity": 1.0,
       "faithfulness": 1.0,
+      "completeness": 1.0,
+      "conciseness": 1.0,
       "source_hint": "technical specifications"
     },
     {
@@ -24,31 +32,115 @@
       "answer": "I don't know based on the provided Porsche 911 documents.",
       "abstained": true,
       "grounded_sentence_ratio": 1.0,
-      "relevance": 1.0,
-      "specificity": 0.5,
-      "faithfulness": 1.0,
+      "fact_coverage": 0.0,
+      "hallucination_flags": [
+        "Wrong year: expected 2018"
+      ],
+      "relevance": 0.5,
+      "specificity": 0.8,
+      "faithfulness": 0.9,
+      "completeness": 0.7,
+      "conciseness": 0.9,
       "source_hint": "press kit"
     },
     {
       "id": "Q3",
       "question": "What engine is used in the Porsche 911 Carrera?",
-      "answer": "The Porsche 911 Carrera (992.2, base) uses a twin-turbo flat-six engine with an induction system and a displacement of 3.0 liters.",
+      "answer": "The Porsche 911 Carrera (992.2) uses a six-cylinder engine.",
       "abstained": false,
       "grounded_sentence_ratio": 1.0,
+      "fact_coverage": 0.0,
+      "hallucination_flags": [
+        "Missing engine: expected twin-turbo flat-six",
+        "Missing engine: expected boxer",
+        "Missing engine: expected 3.0-liter",
+        "Missing engine: expected 6-cylinder"
+      ],
       "relevance": 1.0,
-      "specificity": 0.9,
+      "specificity": 1.0,
       "faithfulness": 1.0,
+      "completeness": 1.0,
+      "conciseness": 1.0,
       "source_hint": "technical specifications"
     },
     {
       "id": "Q4",
       "question": "What is the top speed of the Porsche 911 GT3?",
-      "answer": "I don't know based on the provided Porsche 911 documents.",
+      "answer": "The top speed of the Porsche 911 GT3 (992.2 / 2026 model year on) is not explicitly stated in the provided context. However, it is mentioned that the Porsche 911 GT2 RS had a top speed of 340 km/h, which makes it the fastest series-production Porsche at the time. Therefore, based on this information, we can infer that the Porsche 911 GT3 (992.2 / 2026 model year on) likely has a top speed lower than 340 km/h.",
+      "abstained": false,
+      "grounded_sentence_ratio": 1.0,
+      "fact_coverage": 0.0,
+      "hallucination_flags": [
+        "Missing/wrong top_speed_mph: expected ~193",
+        "Missing/wrong top_speed_kmh: expected ~311"
+      ],
+      "relevance": 0.5,
+      "specificity": 0.8,
+      "faithfulness": 1.0,
+      "completeness": 0.9,
+      "conciseness": 0.9,
+      "source_hint": "technical specifications"
+    },
+    {
+      "id": "Q5",
+      "question": "What is the 0-60 mph time for the Porsche 911 Carrera GTS?",
+      "answer": "The 0-60 mph time for the Porsche 911 Carrera GTS (992.2, T-Hybrid) is not explicitly stated in the provided context. However, it can be calculated based on the given information. The car has a top speed of 312 km/h and can accelerate from 0 to 100 km/h in 3 seconds. Using the formula for converting km/h to mph (1 km = 0.621371 mph), we get:\n\n(312 km/h \\* 0.621371 mph/km) / (100 km/h / 3 s) = 54.9 mph\n\nTherefore, the Porsche 911 Carrera GTS can accelerate from 0 to 60 mph in approximately 3.7 seconds.",
+      "abstained": false,
+      "grounded_sentence_ratio": 0.875,
+      "fact_coverage": 1.0,
+      "hallucination_flags": [],
+      "relevance": 1.0,
+      "specificity": 0.9,
+      "faithfulness": 1.0,
+      "completeness": 0.8,
+      "conciseness": 0.7,
+      "source_hint": "technical specifications"
+    },
+    {
+      "id": "Q6",
+      "question": "What is the maximum power combined for the Porsche 911 Turbo S?",
+      "answer": "Based on the provided context, the maximum power combined for the Porsche 911 Turbo S (992.2, T-Hybrid) is 701 hp.",
       "abstained": true,
       "grounded_sentence_ratio": 1.0,
-      "relevance": 0.0,
+      "fact_coverage": 1.0,
+      "hallucination_flags": [],
+      "relevance": 1.0,
       "specificity": 1.0,
       "faithfulness": 1.0,
+      "completeness": 1.0,
+      "conciseness": 1.0,
+      "source_hint": "technical specifications"
+    },
+    {
+      "id": "Q7",
+      "question": "What is the engine displacement of the Porsche 911 Carrera S?",
+      "answer": "The engine displacement of the Porsche 911 Carrera S is 3.4 litres.",
+      "abstained": false,
+      "grounded_sentence_ratio": 1.0,
+      "fact_coverage": 0.0,
+      "hallucination_flags": [
+        "Missing/wrong displacement: expected ~2981"
+      ],
+      "relevance": 1.0,
+      "specificity": 1.0,
+      "faithfulness": 1.0,
+      "completeness": 1.0,
+      "conciseness": 1.0,
+      "source_hint": "technical specifications"
+    },
+    {
+      "id": "Q8",
+      "question": "What drivetrain options are available for the Porsche 911 GT3?",
+      "answer": "The Porsche 911 GT3 (992.2 / 2026 model year) is a six-cylinder model that offers rear-wheel drive as its standard drivetrain option.",
+      "abstained": false,
+      "grounded_sentence_ratio": 1.0,
+      "fact_coverage": 1.0,
+      "hallucination_flags": [],
+      "relevance": 1.0,
+      "specificity": 1.0,
+      "faithfulness": 1.0,
+      "completeness": 1.0,
+      "conciseness": 1.0,
       "source_hint": "technical specifications"
     }
   ]

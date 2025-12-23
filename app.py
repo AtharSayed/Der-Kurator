@@ -1,3 +1,4 @@
+# app.py
 import streamlit as st
 import base64
 from rag.qa import ask
@@ -29,7 +30,7 @@ st.set_page_config(
 )
 
 # --------------------------------------------------
-# Dark translucent UI CSS
+# Dark translucent UI CSS (unchanged + minor tweaks)
 # --------------------------------------------------
 st.markdown(
     f"""
@@ -105,6 +106,7 @@ div[data-testid="stChatMessage"]:has(div[data-testid="chat-message-assistant"]) 
     border-radius: 12px;
     margin-bottom: 0.8rem;
     border: 1px solid rgba(255,255,255,0.15);
+    font-size: 0.95rem;
 }}
 
 .source-file {{
@@ -150,7 +152,6 @@ textarea::selection {{
     border-radius: 12px;
     border-left: 5px solid var(--porsche-red);
 }}
-
 </style>
 """,
     unsafe_allow_html=True
@@ -177,49 +178,70 @@ for message in st.session_state.messages:
         if message.get("citations"):
             st.markdown('<div class="sources-header">📑 Sources</div>', unsafe_allow_html=True)
             for idx, c in enumerate(message["citations"], 1):
+                variant_str = f" • {c['variant']}" if c.get("variant") else ""
+                page_str = f" (page {c['page']})" if c.get("page") else ""
+                elem_type = f" • {c['element_type']}" if c.get("element_type") and c["element_type"] != "NarrativeText" else ""
+
                 st.markdown(
                     f"""
                     <div class="source-item">
                         <strong>{idx}.</strong>
-                        <span class="source-file">{c.get("source","Unknown")}</span>
+                        <span class="source-file">{c.get("source","Unknown")}</span>{variant_str}{page_str}{elem_type}
                     </div>
                     """,
                     unsafe_allow_html=True,
                 )
 
 # --------------------------------------------------
-# Input
+# Input & Response
 # --------------------------------------------------
-if question := st.chat_input("Ask about the Porsche 911 (e.g., torque of Carrera S)"):
+if question := st.chat_input("Ask about the Porsche 911 (e.g., torque of GT3, 0-60 of Turbo S)"):
+    # Add user message to chat
     st.session_state.messages.append({"role": "user", "content": question})
 
     with st.chat_message("user"):
         st.markdown(question)
 
+    # Generate assistant response
     with st.chat_message("assistant", avatar="🏎️"):
         with st.spinner("Thinking..."):
             result = ask(question.strip())
             answer = result.get("answer", "").strip()
             citations = result.get("citations", [])
+            best_score = result.get("best_score")
 
             if answer.lower().startswith("i don't know"):
                 st.info(answer)
             else:
                 st.markdown(answer)
 
+                # Optional: show confidence score (uncomment if you want debug info)
+                # if best_score:
+                #     st.caption(f"Confidence score: {best_score:.2f}")
+
+            # Show sources only if we have a real answer
             if citations and not answer.lower().startswith("i don't know"):
                 st.markdown('<div class="sources-header">📑 Sources</div>', unsafe_allow_html=True)
                 for idx, c in enumerate(citations, 1):
+                    variant_str = f" • {c['variant']}" if c.get("variant") else ""
+                    page_str = f" (page {c['page']})" if c.get("page") else ""
+                    elem_type = f" • {c['element_type']}" if c.get("element_type") and c["element_type"] != "NarrativeText" else ""
+
                     st.markdown(
                         f"""
                         <div class="source-item">
                             <strong>{idx}.</strong>
-                            <span class="source-file">{c.get("source","Unknown")}</span>
+                            <span class="source-file">{c.get("source","Unknown")}</span>{variant_str}{page_str}{elem_type}
                         </div>
                         """,
                         unsafe_allow_html=True,
                     )
 
+            # Save to session state
             st.session_state.messages.append(
-                {"role": "assistant", "content": answer, "citations": citations}
+                {
+                    "role": "assistant",
+                    "content": answer,
+                    "citations": citations
+                }
             )
