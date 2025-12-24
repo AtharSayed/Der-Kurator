@@ -4,33 +4,46 @@ import base64
 from rag.qa import ask
 
 # --------------------------------------------------
-# Encode background image
-# --------------------------------------------------
-@st.cache_data
-def get_base64_encoded_image(image_path):
-    with open(image_path, "rb") as img_file:
-        return base64.b64encode(img_file.read()).decode("utf-8")
-
-image_path = "data/images/Porsche 911 Carrera T parked in a courtyard.jpeg"
-
-try:
-    base64_image = get_base64_encoded_image(image_path)
-except FileNotFoundError:
-    st.error(f"Background image not found at {image_path}")
-    base64_image = ""
-
-# --------------------------------------------------
-# Page config
+# Page config — MUST BE THE VERY FIRST st.* CALL
 # --------------------------------------------------
 st.set_page_config(
-    page_title="Porsche 911 Knowledge Assistant",
+    page_title="Der Kurator — Porsche 911 Knowledge Assistant",
     page_icon="🏎️",
     layout="centered",
     initial_sidebar_state="collapsed"
 )
 
 # --------------------------------------------------
-# Dark translucent UI CSS (unchanged + minor tweaks)
+# Encode background image
+# --------------------------------------------------
+@st.cache_data
+def get_base64_encoded_image(image_path):
+    try:
+        with open(image_path, "rb") as img_file:
+            return base64.b64encode(img_file.read()).decode("utf-8")
+    except FileNotFoundError:
+        return None
+
+image_path = "data/images/Porsche 911 Carrera T parked in a courtyard.jpeg"
+base64_image = get_base64_encoded_image(image_path)
+
+# If image not found, we'll just run without background (no early st.error)
+background_css = ""
+if base64_image:
+    background_css = f"""
+    .stApp {{
+        background-image: url("data:image/jpeg;base64,{base64_image}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }}
+    """
+else:
+    st.warning("Background image not found. Running without background image.")
+
+# --------------------------------------------------
+# Custom CSS (dark translucent glass-morphism UI)
 # --------------------------------------------------
 st.markdown(
     f"""
@@ -42,14 +55,6 @@ html, body, [class*="css"] {{
     color: #F9FAFB;
 }}
 
-.stApp {{
-    background-image: url("data:image/jpeg;base64,{base64_image}");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-}}
-
 .stApp::before {{
     content: "";
     position: fixed;
@@ -57,6 +62,8 @@ html, body, [class*="css"] {{
     background-color: rgba(0, 0, 0, 0.65);
     z-index: -1;
 }}
+
+{background_css}
 
 :root {{
     --glass-dark: rgba(0, 0, 0, 0.72);
@@ -129,11 +136,6 @@ textarea::placeholder {{
     color: #D1D5DB !important;
 }}
 
-textarea::selection {{
-    background: #B11210;
-    color: #FFFFFF;
-}}
-
 .stButton > button {{
     background-color: var(--porsche-red);
     color: #FFFFFF;
@@ -146,7 +148,7 @@ textarea::selection {{
     background-color: #8F0E0C;
 }}
 
-.stInfo, .stError {{
+.stInfo, .stWarning, .stError {{
     background-color: var(--glass-dark);
     color: #FFFFFF;
     border-radius: 12px;
@@ -160,18 +162,19 @@ textarea::selection {{
 # --------------------------------------------------
 # Header
 # --------------------------------------------------
-st.markdown('<div class="main-title">Porsche 911 Knowledge Assistant</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-title">Der Kurator</div>', unsafe_allow_html=True)
 st.markdown(
-    '<div class="subtitle">Ask me anything about Porsche 911 technical specs and history</div>',
+    '<div class="subtitle">Porsche 911 Knowledge Assistant — Precise, document-grounded answers</div>',
     unsafe_allow_html=True
 )
 
 # --------------------------------------------------
-# Chat state
+# Chat session state
 # --------------------------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+# Display previous messages
 for message in st.session_state.messages:
     with st.chat_message(message["role"], avatar="🏎️" if message["role"] == "assistant" else None):
         st.markdown(message["content"])
@@ -186,40 +189,34 @@ for message in st.session_state.messages:
                     f"""
                     <div class="source-item">
                         <strong>{idx}.</strong>
-                        <span class="source-file">{c.get("source","Unknown")}</span>{variant_str}{page_str}{elem_type}
+                        <span class="source-file">{c.get("source", "Unknown")}</span>{variant_str}{page_str}{elem_type}
                     </div>
                     """,
                     unsafe_allow_html=True,
                 )
 
 # --------------------------------------------------
-# Input & Response
+# User input
 # --------------------------------------------------
-if question := st.chat_input("Ask about the Porsche 911 (e.g., torque of GT3, 0-60 of Turbo S)"):
-    # Add user message to chat
+if question := st.chat_input("Ask about Porsche 911 specs, variants, history, etc. (e.g., 'What is the horsepower of the 992 GT3 RS?')"):
+    # Add user message
     st.session_state.messages.append({"role": "user", "content": question})
-
     with st.chat_message("user"):
         st.markdown(question)
 
-    # Generate assistant response
+    # Generate response
     with st.chat_message("assistant", avatar="🏎️"):
-        with st.spinner("Thinking..."):
+        with st.spinner("Retrieving and thinking..."):
             result = ask(question.strip())
             answer = result.get("answer", "").strip()
             citations = result.get("citations", [])
-            best_score = result.get("best_score")
 
-            if answer.lower().startswith("i don't know"):
-                st.info(answer)
+            if answer.lower().startswith("i don't know") or not answer:
+                st.info(answer if answer else "I don't have sufficient information to answer this question.")
             else:
                 st.markdown(answer)
 
-                # Optional: show confidence score (uncomment if you want debug info)
-                # if best_score:
-                #     st.caption(f"Confidence score: {best_score:.2f}")
-
-            # Show sources only if we have a real answer
+            # Display sources only when we have a grounded answer
             if citations and not answer.lower().startswith("i don't know"):
                 st.markdown('<div class="sources-header">📑 Sources</div>', unsafe_allow_html=True)
                 for idx, c in enumerate(citations, 1):
@@ -231,13 +228,13 @@ if question := st.chat_input("Ask about the Porsche 911 (e.g., torque of GT3, 0-
                         f"""
                         <div class="source-item">
                             <strong>{idx}.</strong>
-                            <span class="source-file">{c.get("source","Unknown")}</span>{variant_str}{page_str}{elem_type}
+                            <span class="source-file">{c.get("source", "Unknown")}</span>{variant_str}{page_str}{elem_type}
                         </div>
                         """,
                         unsafe_allow_html=True,
                     )
 
-            # Save to session state
+            # Save assistant response to session
             st.session_state.messages.append(
                 {
                     "role": "assistant",
