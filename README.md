@@ -110,11 +110,15 @@ Der Kurator uses multiple layers of safeguards:
 
 Offline evaluation is performed using:
 
-- Hit Rate
-- Mean Reciprocal Rank (MRR)
-- Context Relevance
-- Faithfulness
-- Answer Relevance
+- Abstention Rate 
+- Grounded Sentence Rate 
+- Average Fact Coverage 
+- Total hallucinations
+- Average relevance
+- Average Specificity
+- Average Faithfullness
+- Average Completeness
+- Average Conciseness 
 
 ### Latest Evaluation Results
 
