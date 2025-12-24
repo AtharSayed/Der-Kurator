@@ -4,30 +4,34 @@ import base64
 from rag.qa import ask
 
 # --------------------------------------------------
-# Page config — MUST BE THE VERY FIRST st.* CALL
+# Page config
 # --------------------------------------------------
 st.set_page_config(
     page_title="Der Kurator — Porsche 911 Knowledge Assistant",
     page_icon="🏎️",
-    layout="centered",
-    initial_sidebar_state="collapsed"
+    layout="wide",
+    initial_sidebar_state="auto"
 )
 
 # --------------------------------------------------
-# Encode background image
+# Load and encode background image
 # --------------------------------------------------
-@st.cache_data
+@st.cache_data(show_spinner=False)
 def get_base64_encoded_image(image_path):
     try:
         with open(image_path, "rb") as img_file:
             return base64.b64encode(img_file.read()).decode("utf-8")
     except FileNotFoundError:
+        st.warning("Background image not found. Using dark overlay only.")
+        return None
+    except Exception as e:
+        st.error(f"Error loading image: {e}")
         return None
 
 image_path = "data/images/Porsche 911 Carrera T parked in a courtyard.jpeg"
 base64_image = get_base64_encoded_image(image_path)
 
-# If image not found, we'll just run without background (no early st.error)
+# Background image CSS (only if loaded)
 background_css = ""
 if base64_image:
     background_css = f"""
@@ -39,11 +43,9 @@ if base64_image:
         background-attachment: fixed;
     }}
     """
-else:
-    st.warning("Background image not found. Running without background image.")
 
 # --------------------------------------------------
-# Custom CSS (dark translucent glass-morphism UI)
+# Comprehensive Custom CSS – Fixed chat UI, proper colors, clean glass effect
 # --------------------------------------------------
 st.markdown(
     f"""
@@ -52,68 +54,84 @@ st.markdown(
 
 html, body, [class*="css"] {{
     font-family: 'Montserrat', sans-serif;
-    color: #F9FAFB;
 }}
 
+/* Full-screen dark transparent overlay */
 .stApp::before {{
     content: "";
     position: fixed;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.65);
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.70);
     z-index: -1;
 }}
 
+/* Background image behind overlay */
 {background_css}
 
+/* Root variables */
 :root {{
-    --glass-dark: rgba(0, 0, 0, 0.72);
-    --glass-darker: rgba(0, 0, 0, 0.85);
+    --glass-bg: rgba(15, 15, 25, 0.80);
+    --glass-bg-darker: rgba(10, 10, 20, 0.92);
     --porsche-red: #B11210;
+    --text-primary: #F9FAFB;
+    --text-secondary: #E5E7EB;
+    --border-light: rgba(255, 255, 255, 0.15);
 }}
 
+/* Title & Subtitle */
 .main-title {{
-    font-size: 3.6rem;
+    font-size: clamp(2.8rem, 6vw, 4.2rem);
     font-weight: 800;
     text-align: center;
     color: #FFFFFF;
-    text-shadow: 2px 2px 12px rgba(0,0,0,0.9);
+    text-shadow: 0 4px 20px rgba(0,0,0,0.9);
+    margin: 2rem 0 0.5rem;
 }}
 
 .subtitle {{
-    font-size: 1.5rem;
+    font-size: clamp(1.1rem, 3vw, 1.6rem);
     text-align: center;
-    color: #E5E7EB;
+    color: var(--text-secondary);
     margin-bottom: 3rem;
-    text-shadow: 0 0 10px rgba(0,0,0,0.9);
+    text-shadow: 0 2px 10px rgba(0,0,0,0.8);
 }}
 
-.stChatMessage {{
-    background-color: var(--glass-dark);
-    border-radius: 16px;
-    padding: 1.4rem 1.8rem;
-    margin: 1.2rem 0;
-    color: #F9FAFB;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+/* Fix Streamlit's default chat message styling */
+div[data-testid="stChatMessage"] {{
+    background-color: var(--glass-bg) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 18px !important;
+    padding: 1.4rem 1.8rem !important;
+    margin: 1rem 0 !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--border-light);
 }}
 
+/* Assistant messages – red left border */
 div[data-testid="stChatMessage"]:has(div[data-testid="chat-message-assistant"]) {{
-    border-left: 6px solid var(--porsche-red);
+    border-left: 6px solid var(--porsche-red) !important;
 }}
 
+/* Sources styling */
 .sources-header {{
     font-size: 1.3rem;
     font-weight: 700;
-    margin-top: 1.8rem;
+    margin: 1.8rem 0 0.8rem 0;
     color: #FFFFFF;
 }}
 
 .source-item {{
-    background-color: var(--glass-darker);
+    background-color: var(--glass-bg-darker);
     padding: 1rem 1.4rem;
     border-radius: 12px;
     margin-bottom: 0.8rem;
-    border: 1px solid rgba(255,255,255,0.15);
+    border: 1px solid var(--border-light);
     font-size: 0.95rem;
+}}
+
+.source-item:hover {{
+    background-color: rgba(30, 30, 40, 0.95);
 }}
 
 .source-file {{
@@ -121,43 +139,65 @@ div[data-testid="stChatMessage"]:has(div[data-testid="chat-message-assistant"]) 
     color: #F87171;
 }}
 
-.stChatInput {{
-    background-color: transparent;
+/* Chat input – clean glass style */
+div[data-testid="stChatInput"] > div > div {{
+    background-color: var(--glass-bg-darker) !important;
+    border-radius: 18px !important;
+    border: 1px solid var(--border-light) !important;
+    backdrop-filter: blur(8px);
 }}
 
-textarea {{
-    background-color: var(--glass-darker) !important;
-    color: #FFFFFF !important;
-    border-radius: 15px !important;
-    border: 1px solid rgba(255,255,255,0.2) !important;
+div[data-testid="stChatInput"] textarea {{
+    background-color: transparent !important;
+    color: var(--text-primary) !important;
+    caret-color: var(--porsche-red);
 }}
 
-textarea::placeholder {{
-    color: #D1D5DB !important;
+div[data-testid="stChatInput"] textarea::placeholder {{
+    color: #9CA3AF !important;
 }}
 
+/* Remove default Streamlit background from chat input container */
+section[data-testid="stSidebar"] + section > div:first-child {{
+    background: transparent !important;
+}}
+
+/* Buttons */
 .stButton > button {{
     background-color: var(--porsche-red);
-    color: #FFFFFF;
-    border-radius: 14px;
-    font-weight: 700;
-    padding: 0.8rem 2rem;
+    color: white;
+    border-radius: 12px;
+    font-weight: 600;
+    border: none;
+    transition: all 0.3s ease;
 }}
 
 .stButton > button:hover {{
     background-color: #8F0E0C;
+    transform: translateY(-2px);
 }}
 
-.stInfo, .stWarning, .stError {{
-    background-color: var(--glass-dark);
-    color: #FFFFFF;
-    border-radius: 12px;
-    border-left: 5px solid var(--porsche-red);
+/* Mobile adjustments */
+@media (max-width: 768px) {{
+    .main-title {{ font-size: 2.8rem; }}
+    .subtitle {{ font-size: 1.3rem; }}
+    div[data-testid="stChatMessage"] {{ padding: 1.2rem !important; }}
 }}
 </style>
 """,
     unsafe_allow_html=True
 )
+
+# --------------------------------------------------
+# Sidebar
+# --------------------------------------------------
+with st.sidebar:
+    st.markdown("### ⚙️ Controls")
+    if st.button("🗑️ Clear Chat History", use_container_width=True):
+        st.session_state.messages = []
+        st.rerun()
+    st.markdown("---")
+    st.caption("**Der Kurator** – Porsche 911 RAG Assistant\nVersion 1.2")
 
 # --------------------------------------------------
 # Header
@@ -169,76 +209,105 @@ st.markdown(
 )
 
 # --------------------------------------------------
-# Chat session state
+# Session state & welcome message
 # --------------------------------------------------
 if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-# Display previous messages
-for message in st.session_state.messages:
-    with st.chat_message(message["role"], avatar="🏎️" if message["role"] == "assistant" else None):
-        st.markdown(message["content"])
-        if message.get("citations"):
-            st.markdown('<div class="sources-header">📑 Sources</div>', unsafe_allow_html=True)
-            for idx, c in enumerate(message["citations"], 1):
-                variant_str = f" • {c['variant']}" if c.get("variant") else ""
-                page_str = f" (page {c['page']})" if c.get("page") else ""
-                elem_type = f" • {c['element_type']}" if c.get("element_type") and c["element_type"] != "NarrativeText" else ""
-
-                st.markdown(
-                    f"""
-                    <div class="source-item">
-                        <strong>{idx}.</strong>
-                        <span class="source-file">{c.get("source", "Unknown")}</span>{variant_str}{page_str}{elem_type}
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
+    st.session_state.messages = [
+        {
+            "role": "assistant",
+            "content": "Hello! I'm **Der Kurator**, your dedicated Porsche 911 expert. Feel free to ask about specifications, model variants, history, performance, or any technical details across all generations.",
+            "citations": []
+        }
+    ]
 
 # --------------------------------------------------
-# User input
+# Chat display container
 # --------------------------------------------------
-if question := st.chat_input("Ask about Porsche 911 specs, variants, history, etc. (e.g., 'What is the horsepower of the 992 GT3 RS?')"):
-    # Add user message
-    st.session_state.messages.append({"role": "user", "content": question})
-    with st.chat_message("user"):
-        st.markdown(question)
+chat_container = st.container()
 
-    # Generate response
-    with st.chat_message("assistant", avatar="🏎️"):
-        with st.spinner("Retrieving and thinking..."):
-            result = ask(question.strip())
-            answer = result.get("answer", "").strip()
-            citations = result.get("citations", [])
-
-            if answer.lower().startswith("i don't know") or not answer:
-                st.info(answer if answer else "I don't have sufficient information to answer this question.")
-            else:
-                st.markdown(answer)
-
-            # Display sources only when we have a grounded answer
-            if citations and not answer.lower().startswith("i don't know"):
+with chat_container:
+    for message in st.session_state.messages:
+        avatar = "🏎️" if message["role"] == "assistant" else "🧑"
+        with st.chat_message(message["role"], avatar=avatar):
+            st.markdown(message["content"], unsafe_allow_html=False)
+            
+            if message.get("citations"):
                 st.markdown('<div class="sources-header">📑 Sources</div>', unsafe_allow_html=True)
-                for idx, c in enumerate(citations, 1):
-                    variant_str = f" • {c['variant']}" if c.get("variant") else ""
-                    page_str = f" (page {c['page']})" if c.get("page") else ""
-                    elem_type = f" • {c['element_type']}" if c.get("element_type") and c["element_type"] != "NarrativeText" else ""
-
+                for idx, citation in enumerate(message["citations"], 1):
+                    variant = f" • {citation.get('variant', '')}" if citation.get("variant") else ""
+                    page = f" (page {citation.get('page', '')})" if citation.get("page") else ""
+                    elem = f" • {citation.get('element_type', '')}" if citation.get("element_type") and citation.get("element_type") != "NarrativeText" else ""
+                    
                     st.markdown(
                         f"""
                         <div class="source-item">
                             <strong>{idx}.</strong>
-                            <span class="source-file">{c.get("source", "Unknown")}</span>{variant_str}{page_str}{elem_type}
+                            <span class="source-file">{citation.get("source", "Unknown")}</span>{variant}{page}{elem}
                         </div>
                         """,
-                        unsafe_allow_html=True,
+                        unsafe_allow_html=True
                     )
 
-            # Save assistant response to session
-            st.session_state.messages.append(
-                {
-                    "role": "assistant",
-                    "content": answer,
-                    "citations": citations
-                }
-            )
+# --------------------------------------------------
+# User input & response handling
+# --------------------------------------------------
+if question := st.chat_input("Ask about Porsche 911 specs, variants, history, etc. (e.g., 'What is the horsepower of the 992 GT3 RS?')"):
+    question = question.strip()
+    if question:
+        # Add user message
+        st.session_state.messages.append({"role": "user", "content": question})
+        with chat_container:
+            with st.chat_message("user", avatar="🧑"):
+                st.markdown(question)
+
+        # Generate assistant response
+        with chat_container:
+            with st.chat_message("assistant", avatar="🏎️"):
+                with st.spinner("Retrieving and thinking..."):
+                    try:
+                        result = ask(question)
+                        answer = result.get("answer", "").strip()
+                        citations = result.get("citations", [])
+
+                        if not answer or answer.lower().startswith("i don't know"):
+                            st.info(answer or "I don't have sufficient information to answer this question.")
+                            final_citations = []
+                        else:
+                            st.markdown(answer)
+                            final_citations = citations
+
+                        # Display sources if available
+                        if final_citations:
+                            st.markdown('<div class="sources-header">📑 Sources</div>', unsafe_allow_html=True)
+                            for idx, c in enumerate(final_citations, 1):
+                                variant = f" • {c.get('variant', '')}" if c.get("variant") else ""
+                                page = f" (page {c.get('page', '')})" if c.get("page") else ""
+                                elem = f" • {c.get('element_type', '')}" if c.get("element_type") and c.get("element_type") != "NarrativeText" else ""
+                                
+                                st.markdown(
+                                    f"""
+                                    <div class="source-item">
+                                        <strong>{idx}.</strong>
+                                        <span class="source-file">{c.get("source", "Unknown")}</span>{variant}{page}{elem}
+                                    </div>
+                                    """,
+                                    unsafe_allow_html=True
+                                )
+
+                        # Save response
+                        st.session_state.messages.append({
+                            "role": "assistant",
+                            "content": answer or "I don't have sufficient information to answer this question.",
+                            "citations": final_citations
+                        })
+
+                    except Exception as e:
+                        st.error("An error occurred. Please try again.")
+                        st.session_state.messages.append({
+                            "role": "assistant",
+                            "content": "Sorry, something went wrong. Please rephrase or try again.",
+                            "citations": []
+                        })
+
+        # Refresh UI
+        st.rerun()
