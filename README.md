@@ -30,9 +30,9 @@ The following diagram illustrates the end-to-end architecture of **Der Kurator**
 
 The following image illustrates the Streamlit UI of Der Kurator where users can ask specific questions 
 
-![Der Kurator Streamlit UI](data/images/Streamlit)
+![Der Kurator Streamlit UI](data/images/Der-Kurator%20Streamlit%20.png)
 
-![Der Kurator Streamlit UI (Chat response + Citations reference)](data/images/Streamlit-II)
+![Der Kurator Streamlit UI (Chat response + Citations reference)](data/images/Der-Kurator%20Streamlit-II.png)
 
 ---
 
