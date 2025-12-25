@@ -25,6 +25,18 @@ The following diagram illustrates the end-to-end architecture of **Der Kurator**
 
 ---
 
+---
+## Der Kurator Streamlit Application 
+
+The following image illustrates the Streamlit UI of Der Kurator where users can ask specific questions 
+
+![Der Kurator Streamlit UI](data/images/Streamlit)
+
+![Der Kurator Streamlit UI (Chat response + Citations reference)](data/images/Streamlit-II)
+
+---
+
+
 ## 📁 Project Structure
 ```bash
 atharsayed-der-kurator/
