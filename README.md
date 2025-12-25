@@ -32,10 +32,8 @@ The following image illustrates the Streamlit UI of Der Kurator where users can 
 
 ![Der Kurator Streamlit UI](data/images/Der-Kurator%20Streamlit%20.png)
 
-![Der Kurator Streamlit UI (Chat response + Citations reference)](data/images/Der-Kurator%20Streamlit-II.png)
-
+![Chat response + Citations reference](data/images/Der-Kurator%20Streamlit-II.png)
 ---
-
 
 ## 📁 Project Structure
 ```bash
