@@ -62,7 +62,7 @@ atharsayed-der-kurator/
     └── test_retrieval.py # Retrieval correctness tests
 ```
 
-## 📄 Supported Document Formats
+##  Supported Document Formats
 
 The ingestion pipeline automatically detects and processes:
 
@@ -77,7 +77,7 @@ Simply add new files to `data/raw/` and re-run ingestion.
 
 ---
 
-## ✂️ Chunking Strategy
+##  Chunking Strategy
 
 ### **Structure-Aware, Element-Level Chunking**
 
