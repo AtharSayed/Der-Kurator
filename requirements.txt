@@ -10,3 +10,4 @@ streamlit-chat
 torch                    # Required by sentence-transformers (often needed explicitly)
 pathlib
 unstructured            # For structure-aware document parsing
+asyncio
