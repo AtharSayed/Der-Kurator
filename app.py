@@ -1,7 +1,16 @@
 # app.py
-import streamlit as st
+import asyncio
 import base64
-from rag.qa import ask
+import logging
+
+import streamlit as st
+from rag.qa import ask_async
+
+# --------------------------------------------------
+# Logging setup
+# --------------------------------------------------
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # --------------------------------------------------
 # Page config
@@ -31,7 +40,6 @@ def get_base64_encoded_image(image_path):
 image_path = "data/images/Porsche 911 Carrera T parked in a courtyard.jpeg"
 base64_image = get_base64_encoded_image(image_path)
 
-# Background image CSS (only if loaded)
 background_css = ""
 if base64_image:
     background_css = f"""
@@ -45,7 +53,7 @@ if base64_image:
     """
 
 # --------------------------------------------------
-# Comprehensive Custom CSS – Fixed chat UI, proper colors, clean glass effect
+# Custom CSS
 # --------------------------------------------------
 st.markdown(
     f"""
@@ -56,7 +64,6 @@ html, body, [class*="css"] {{
     font-family: 'Montserrat', sans-serif;
 }}
 
-/* Full-screen dark transparent overlay */
 .stApp::before {{
     content: "";
     position: fixed;
@@ -65,10 +72,8 @@ html, body, [class*="css"] {{
     z-index: -1;
 }}
 
-/* Background image behind overlay */
 {background_css}
 
-/* Root variables */
 :root {{
     --glass-bg: rgba(15, 15, 25, 0.80);
     --glass-bg-darker: rgba(10, 10, 20, 0.92);
@@ -78,7 +83,6 @@ html, body, [class*="css"] {{
     --border-light: rgba(255, 255, 255, 0.15);
 }}
 
-/* Title & Subtitle */
 .main-title {{
     font-size: clamp(2.8rem, 6vw, 4.2rem);
     font-weight: 800;
@@ -96,7 +100,6 @@ html, body, [class*="css"] {{
     text-shadow: 0 2px 10px rgba(0,0,0,0.8);
 }}
 
-/* Fix Streamlit's default chat message styling */
 div[data-testid="stChatMessage"] {{
     background-color: var(--glass-bg) !important;
     backdrop-filter: blur(12px);
@@ -108,12 +111,10 @@ div[data-testid="stChatMessage"] {{
     border: 1px solid var(--border-light);
 }}
 
-/* Assistant messages – red left border */
 div[data-testid="stChatMessage"]:has(div[data-testid="chat-message-assistant"]) {{
     border-left: 6px solid var(--porsche-red) !important;
 }}
 
-/* Sources styling */
 .sources-header {{
     font-size: 1.3rem;
     font-weight: 700;
@@ -139,7 +140,6 @@ div[data-testid="stChatMessage"]:has(div[data-testid="chat-message-assistant"]) 
     color: #F87171;
 }}
 
-/* Chat input – clean glass style */
 div[data-testid="stChatInput"] > div > div {{
     background-color: var(--glass-bg-darker) !important;
     border-radius: 18px !important;
@@ -157,12 +157,6 @@ div[data-testid="stChatInput"] textarea::placeholder {{
     color: #9CA3AF !important;
 }}
 
-/* Remove default Streamlit background from chat input container */
-section[data-testid="stSidebar"] + section > div:first-child {{
-    background: transparent !important;
-}}
-
-/* Buttons */
 .stButton > button {{
     background-color: var(--porsche-red);
     color: white;
@@ -177,7 +171,6 @@ section[data-testid="stSidebar"] + section > div:first-child {{
     transform: translateY(-2px);
 }}
 
-/* Mobile adjustments */
 @media (max-width: 768px) {{
     .main-title {{ font-size: 2.8rem; }}
     .subtitle {{ font-size: 1.3rem; }}
@@ -197,7 +190,7 @@ with st.sidebar:
         st.session_state.messages = []
         st.rerun()
     st.markdown("---")
-    st.caption("**Der Kurator** – Porsche 911 RAG Assistant\nVersion 1.2")
+    st.caption("**Der Kurator** – Porsche 911 RAG Assistant\nVersion 1.3 • Async + Cached")
 
 # --------------------------------------------------
 # Header
@@ -215,7 +208,8 @@ if "messages" not in st.session_state:
     st.session_state.messages = [
         {
             "role": "assistant",
-            "content": "Hello! I'm **Der Kurator**, your dedicated Porsche 911 expert. Feel free to ask about specifications, model variants, history, performance, or any technical details across all generations.",
+            "content": "Hello! I'm **Der Kurator**, your dedicated Porsche 911 expert. "
+                       "Ask me about specifications, variants, history, performance, or technical details across all generations.",
             "citations": []
         }
     ]
@@ -249,9 +243,9 @@ with chat_container:
                     )
 
 # --------------------------------------------------
-# User input & response handling
+# User input & response handling (Modern Streamlit compatible)
 # --------------------------------------------------
-if question := st.chat_input("Ask about Porsche 911 specs, variants, history, etc. (e.g., 'What is the horsepower of the 992 GT3 RS?')"):
+if question := st.chat_input("Ask about Porsche 911 specs, variants, history, etc."):
     question = question.strip()
     if question:
         # Add user message
@@ -260,54 +254,58 @@ if question := st.chat_input("Ask about Porsche 911 specs, variants, history, et
             with st.chat_message("user", avatar="🧑"):
                 st.markdown(question)
 
-        # Generate assistant response
+        # Assistant response
         with chat_container:
             with st.chat_message("assistant", avatar="🏎️"):
-                with st.spinner("Retrieving and thinking..."):
-                    try:
-                        result = ask(question)
-                        answer = result.get("answer", "").strip()
-                        citations = result.get("citations", [])
+                response_placeholder = st.empty()
+                status_placeholder = st.status("Retrieving and thinking...")
 
-                        if not answer or answer.lower().startswith("i don't know"):
-                            st.info(answer or "I don't have sufficient information to answer this question.")
-                            final_citations = []
-                        else:
-                            st.markdown(answer)
-                            final_citations = citations
+                try:
+                    result = asyncio.run(ask_async(question))
+                    answer = result.get("answer", "").strip()
+                    citations = result.get("citations", [])
 
-                        # Display sources if available
-                        if final_citations:
-                            st.markdown('<div class="sources-header">📑 Sources</div>', unsafe_allow_html=True)
-                            for idx, c in enumerate(final_citations, 1):
-                                variant = f" • {c.get('variant', '')}" if c.get("variant") else ""
-                                page = f" (page {c.get('page', '')})" if c.get("page") else ""
-                                elem = f" • {c.get('element_type', '')}" if c.get("element_type") and c.get("element_type") != "NarrativeText" else ""
-                                
-                                st.markdown(
-                                    f"""
-                                    <div class="source-item">
-                                        <strong>{idx}.</strong>
-                                        <span class="source-file">{c.get("source", "Unknown")}</span>{variant}{page}{elem}
-                                    </div>
-                                    """,
-                                    unsafe_allow_html=True
-                                )
+                    if not answer:
+                        answer = "I don't have sufficient information to answer this question."
 
-                        # Save response
-                        st.session_state.messages.append({
-                            "role": "assistant",
-                            "content": answer or "I don't have sufficient information to answer this question.",
-                            "citations": final_citations
-                        })
+                    # Update status and display answer
+                    status_placeholder.update(label="Complete!", state="complete")
+                    response_placeholder.markdown(answer)
 
-                    except Exception as e:
-                        st.error("An error occurred. Please try again.")
-                        st.session_state.messages.append({
-                            "role": "assistant",
-                            "content": "Sorry, something went wrong. Please rephrase or try again.",
-                            "citations": []
-                        })
+                    # Display sources
+                    if citations:
+                        st.markdown('<div class="sources-header">📑 Sources</div>', unsafe_allow_html=True)
+                        for idx, c in enumerate(citations, 1):
+                            variant = f" • {c.get('variant', '')}" if c.get("variant") else ""
+                            page = f" (page {c.get('page', '')})" if c.get("page") else ""
+                            elem = f" • {c.get('element_type', '')}" if c.get("element_type") and c.get("element_type") != "NarrativeText" else ""
+                            
+                            st.markdown(
+                                f"""
+                                <div class="source-item">
+                                    <strong>{idx}.</strong>
+                                    <span class="source-file">{c.get("source", "Unknown")}</span>{variant}{page}{elem}
+                                </div>
+                                """,
+                                unsafe_allow_html=True
+                            )
 
-        # Refresh UI
+                    # Save to history
+                    st.session_state.messages.append({
+                        "role": "assistant",
+                        "content": answer,
+                        "citations": citations
+                    })
+
+                except Exception as e:
+                    logger.error(f"Error in ask_async: {e}")
+                    status_placeholder.update(label="Error occurred", state="error")
+                    response_placeholder.error("Sorry, something went wrong. Please try again.")
+                    st.session_state.messages.append({
+                        "role": "assistant",
+                        "content": "Sorry, something went wrong. Please rephrase or try again.",
+                        "citations": []
+                    })
+
+        # Trigger rerun to update chat history
         st.rerun()
