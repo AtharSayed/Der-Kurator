@@ -8,7 +8,7 @@
     "avg_specificity": 0.9045454545454544,
     "avg_faithfulness": 0.9090909090909091,
     "avg_completeness": 0.9045454545454544,
-    "avg_conciseness": 0.8863636363636364
+    "avg_conciseness": 0.890909090909091
   },
   "details": [
     {
@@ -73,11 +73,11 @@
         "Missing changes: expected wider track",
         "Missing changes: expected turbocharging"
       ],
-      "relevance": 1.0,
-      "specificity": 1.0,
+      "relevance": 0.95,
+      "specificity": 0.95,
       "faithfulness": 1.0,
-      "completeness": 1.0,
-      "conciseness": 1.0,
+      "completeness": 0.95,
+      "conciseness": 0.85,
       "source_hint": "generation comparison"
     },
     {
@@ -106,11 +106,11 @@
       "grounded_sentence_ratio": 1.0,
       "fact_coverage": 1.0,
       "hallucination_flags": [],
-      "relevance": 0.95,
-      "specificity": 0.95,
+      "relevance": 1.0,
+      "specificity": 1.0,
       "faithfulness": 1.0,
-      "completeness": 0.95,
-      "conciseness": 0.95,
+      "completeness": 1.0,
+      "conciseness": 1.0,
       "source_hint": "none (unanswerable)"
     },
     {
@@ -160,7 +160,7 @@
       "specificity": 1.0,
       "faithfulness": 1.0,
       "completeness": 1.0,
-      "conciseness": 0.8,
+      "conciseness": 0.95,
       "source_hint": "design overview"
     },
     {

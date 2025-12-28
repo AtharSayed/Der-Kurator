@@ -27,8 +27,8 @@ from evaluation.dataset import EVAL_QUESTIONS
 # Retriever configuration (updated params for better recall)
 # ---------------------------------------------------------
 retriever = Retriever(
-    top_k=10,  # Increased for better coverage
-    min_similarity=0.42,  # Slightly lowered for recall
+    top_k=16,  # Increased for better coverage
+    min_similarity=0.30,  # Slightly lowered for recall
     min_chunk_length=50
 )
 
