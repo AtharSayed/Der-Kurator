@@ -20,6 +20,7 @@ sys.path.insert(0, str(ROOT_DIR))
 
 from rag.qa import ask
 from rag.retriever import Retriever
+from rag.prompt import PROMPT_TEMPLATE  # Import the same strict system prompt used in the app
 from evaluation.dataset import EVAL_QUESTIONS
 
 # ---------------------------------------------------------
@@ -68,7 +69,7 @@ def grounded_sentence(sentence: str, context: str, min_overlap_ratio: float = 0.
     return overlap / len(s_tokens) >= min_overlap_ratio if s_tokens else False
 
 # ---------------------------------------------------------
-# Fact coverage check using expected_facts
+# Fact coverage check using expected_facts (fixed for mixed types)
 # ---------------------------------------------------------
 def check_fact_coverage(item: Dict, answer: str) -> Dict:
     coverage = {
@@ -104,11 +105,12 @@ def check_fact_coverage(item: Dict, answer: str) -> Dict:
                 else:
                     coverage["hallucination_flags"].append(f"Wrong {key}: expected {v}")
 
-    elif item["answer_type"] == "descriptive":
+    elif item["answer_type"] in ("descriptive", "yes/no", "abstention"):
         for key, values in expected.items():
             for v in values:
                 total += 1
-                if any(v.lower() in answer_lower for v in values):
+                v_str = str(v).lower()  # Safe conversion for ints/floats/strings
+                if v_str in answer_lower:
                     matched += 1
                 else:
                     coverage["hallucination_flags"].append(f"Missing {key}: expected {v}")
@@ -117,79 +119,96 @@ def check_fact_coverage(item: Dict, answer: str) -> Dict:
     return coverage
 
 # ---------------------------------------------------------
-# Improved LLM behavioral judge (better prompt, more aspects)
+# LLM-based behavioral judge – now uses the SAME PROMPT_TEMPLATE as the app
 # ---------------------------------------------------------
 def llm_behavior_judge(question: str, answer: str, context: str) -> dict:
     """
-    Evaluates BEHAVIOR + completeness.
+    Reuses the exact same strict grounding prompt (PROMPT_TEMPLATE) 
+    but adapts the task to evaluation.
     """
-    prompt = f"""
-You are evaluating a RAG system's response behavior and quality.
+    judge_context = f"""
+Original Question: {question}
 
-Question: {question}
+Generated Answer: {answer}
 
-Answer: {answer}
-
-Context (first 2000 chars): {context[:2000]}
-
-Score each aspect from 0.0 to 1.0:
-- Relevance: How well does the answer address the exact question?
-- Specificity: Does it provide precise details without being vague?
-- Faithfulness: Does it stick to context without adding unsupported info?
-- Completeness: Does it cover all key points from the context?
-- Conciseness: Is it direct without unnecessary fluff?
-
-Output JSON only:
-{{"relevance": 0.x, "specificity": 0.x, "faithfulness": 0.x, "completeness": 0.x, "conciseness": 0.x}}
+Retrieved Context:
+{context}
 """
+
+    judge_task = """
+Evaluate the generated answer strictly according to these criteria and output ONLY a JSON object with scores from 0.0 to 1.0:
+
+- relevance: How directly does the answer address the original question?
+- specificity: How precise and detailed is the answer?
+- faithfulness: Does the answer contain ONLY information present in the retrieved context (no hallucination)?
+- completeness: Does the answer include all relevant facts from the context?
+- conciseness: Is the answer succinct without unnecessary repetition or fluff?
+
+Respond with valid JSON only:
+{
+  "relevance": 0.0-1.0,
+  "specificity": 0.0-1.0,
+  "faithfulness": 0.0-1.0,
+  "completeness": 0.0-1.0,
+  "conciseness": 0.0-1.0
+}
+"""
+
+    full_prompt = PROMPT_TEMPLATE.format(context=judge_context, question=judge_task)
+
     try:
         resp = ollama.chat(
             model="mistral:7b-instruct-q4_0",
-            messages=[{"role": "user", "content": prompt}],
-            options={"temperature": 0.2}
+            messages=[{"role": "user", "content": full_prompt}],
+            options={"temperature": 0.2, "num_predict": 300}
         )
-        text = resp["message"]["content"].strip()
-        scores = json.loads(text)
+        content = resp["message"]["content"].strip()
+        scores = json.loads(content)
         return {k: float(v) for k, v in scores.items()}
     except Exception as e:
-        print(f"LLM judge error: {e}")
-        return {"relevance": 0.5, "specificity": 0.5, "faithfulness": 0.5, "completeness": 0.5, "conciseness": 0.5}
+        print(f"Judge LLM error: {e}")
+        return {
+            "relevance": 0.5, "specificity": 0.5, "faithfulness": 0.5,
+            "completeness": 0.5, "conciseness": 0.5
+        }
 
 # ---------------------------------------------------------
-# Improved Retrieval evaluation (embedding similarity proxy)
+# Retrieval evaluation (simple binary based on source_hint)
 # ---------------------------------------------------------
-def evaluate_retrieval():
-    avg_sim = []
-    hit_rate = 0
+def evaluate_retrieval() -> dict:
+    print("Running Retrieval Evaluation...\n")
+    precisions, recalls, mrrs = [], [], []
 
     for item in EVAL_QUESTIONS:
         question = item["question"]
-        results = retriever.retrieve(question)
+        retrieved = retriever.retrieve(question)
+        retrieved_sources = [r["metadata"].get("source", "").lower() for r in retrieved]
+        expected = item.get("source_hint", "").lower()
 
-        if not results:
-            continue
+        hit = any(expected in src for src in retrieved_sources)
+        precision = 1.0 if hit else 0.0
+        recall = 1.0 if hit else 0.0
 
-        # Avg top-3 similarity as proxy for relevance
-        top_sims = [r["score"] for r in results[:3]]
-        avg_sim.append(np.mean(top_sims))
+        rank = next((i+1 for i, src in enumerate(retrieved_sources) if expected in src), 0)
+        mrr = 1.0 / rank if rank > 0 else 0.0
 
-        # Hit if best > 0.5
-        if results[0]["score"] > 0.5:
-            hit_rate += 1
+        precisions.append(precision)
+        recalls.append(recall)
+        mrrs.append(mrr)
 
     return {
-        "avg_top_similarity": np.mean(avg_sim) if avg_sim else 0.0,
-        "relevant_context_hit_rate": hit_rate / len(EVAL_QUESTIONS)
+        "avg_precision": np.mean(precisions),
+        "avg_recall": np.mean(recalls),
+        "avg_mrr": np.mean(mrrs)
     }
 
 # ---------------------------------------------------------
-# End-to-End Evaluation
+# End-to-end RAG evaluation
 # ---------------------------------------------------------
 def evaluate_end_to_end():
     print("Running Enhanced End-to-End RAG Evaluation...\n")
 
     detailed = []
-
     grounded_sentences_total = 0
     sentences_total = 0
     abstentions = 0
@@ -203,7 +222,7 @@ def evaluate_end_to_end():
 
     for item in EVAL_QUESTIONS:
         question = item["question"]
-        response = ask(question)
+        response = ask(question)  # Uses the exact same RAG pipeline + PROMPT_TEMPLATE as Streamlit app
         answer = response.get("answer", "").strip()
         retrieved = retriever.retrieve(question)
         context = "\n\n".join(r["content"] for r in retrieved)
@@ -216,15 +235,15 @@ def evaluate_end_to_end():
         answer_sentences = extract_sentences(answer)
         grounded_count = sum(1 for s in answer_sentences if grounded_sentence(s, context))
         grounded_sentences_total += grounded_count
-        sentences_total += len(answer_sentences)
+        sentences_total += len(answer_sentences) if answer_sentences else 1
 
-        # Fact coverage (if expected_facts present)
+        # Fact coverage
         fact_check = check_fact_coverage(item, answer)
         if "fact_coverage_rate" in fact_check:
             fact_coverage_rates.append(fact_check["fact_coverage_rate"])
             hallucination_count += len(fact_check["hallucination_flags"])
 
-        # LLM judge
+        # LLM judge (now enforced with same strict prompt)
         judge_scores = llm_behavior_judge(question, answer, context)
         for k in scores:
             scores[k].append(judge_scores.get(k, 0.5))
@@ -241,9 +260,9 @@ def evaluate_end_to_end():
             "source_hint": item.get("source_hint", "unknown")
         })
 
-        time.sleep(0.5)  # Increased delay to avoid rate limits
+        time.sleep(0.5)  # Prevent overwhelming local Ollama
 
-    # Aggregate
+    # Aggregate summary
     summary = {
         "abstention_rate": abstentions / len(EVAL_QUESTIONS),
         "grounded_sentence_rate": grounded_sentences_total / sentences_total if sentences_total else 1.0,
@@ -253,8 +272,7 @@ def evaluate_end_to_end():
     }
 
     output_path = Path("evaluation/detailed_results.json")
-    output_path.parent.mkdir(exist_ok=True)
-
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "w") as f:
         json.dump({"summary": summary, "details": detailed}, f, indent=2)
 
