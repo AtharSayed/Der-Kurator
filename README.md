@@ -136,14 +136,15 @@ Offline evaluation is performed using:
 {
   "summary": {
     "abstention_rate": 0.09090909090909091,
+    "invalid_abstentions": 1,
     "grounded_sentence_rate": 0.9705882352941176,
-    "avg_fact_coverage": 0.4242424242424242,
-    "total_hallucinations": 12,
-    "avg_relevance": 0.9045454545454544,
-    "avg_specificity": 0.9045454545454544,
-    "avg_faithfulness": 0.9090909090909091,
-    "avg_completeness": 0.9045454545454544,
-    "avg_conciseness": 0.890909090909091
+    "avg_fact_coverage": 0.5151515151515151,
+    "total_hallucinations": 11,
+    "avg_relevance": 0.9545454545454546,
+    "avg_specificity": 0.9818181818181819,
+    "avg_faithfulness": 0.990909090909091,
+    "avg_completeness": 0.9727272727272727,
+    "avg_conciseness": 0.8090909090909091
   }
 ```
 
