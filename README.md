@@ -135,15 +135,15 @@ Offline evaluation is performed using:
 ```json
 {
   "summary": {
-    "abstention_rate": 0.25,
-    "grounded_sentence_rate": 0.9565217391304348,
-    "avg_fact_coverage": 0.5,
-    "total_hallucinations": 8,
-    "avg_relevance": 0.875,
-    "avg_specificity": 0.9375,
-    "avg_faithfulness": 0.9875,
-    "avg_completeness": 0.9249999999999999,
-    "avg_conciseness": 0.9375
+    "abstention_rate": 0.09090909090909091,
+    "grounded_sentence_rate": 0.9705882352941176,
+    "avg_fact_coverage": 0.4242424242424242,
+    "total_hallucinations": 12,
+    "avg_relevance": 0.9045454545454544,
+    "avg_specificity": 0.9045454545454544,
+    "avg_faithfulness": 0.9090909090909091,
+    "avg_completeness": 0.9045454545454544,
+    "avg_conciseness": 0.890909090909091
   }
 ```
 
