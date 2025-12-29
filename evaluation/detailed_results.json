@@ -1,199 +1,187 @@
 {
   "summary": {
     "abstention_rate": 0.09090909090909091,
+    "invalid_abstentions": 1,
     "grounded_sentence_rate": 0.9705882352941176,
-    "avg_fact_coverage": 0.4242424242424242,
-    "total_hallucinations": 12,
-    "avg_relevance": 0.9045454545454544,
-    "avg_specificity": 0.9045454545454544,
-    "avg_faithfulness": 0.9090909090909091,
-    "avg_completeness": 0.9045454545454544,
-    "avg_conciseness": 0.890909090909091
+    "avg_fact_coverage": 0.5151515151515151,
+    "total_hallucinations": 11,
+    "avg_relevance": 0.9545454545454546,
+    "avg_specificity": 0.9818181818181819,
+    "avg_faithfulness": 0.990909090909091,
+    "avg_completeness": 0.9727272727272727,
+    "avg_conciseness": 0.8090909090909091
   },
   "details": [
     {
       "id": "Q1",
-      "question": "What is the horsepower of the Porsche 911 Turbo S?",
       "answer": "The Porsche 911 Turbo S has a horsepower of 701.",
       "abstained": false,
+      "invalid_abstention": false,
       "grounded_sentence_ratio": 1.0,
       "fact_coverage": 1.0,
-      "hallucination_flags": [],
+      "unsupported_claims": [],
       "relevance": 1.0,
       "specificity": 1.0,
       "faithfulness": 1.0,
       "completeness": 1.0,
-      "conciseness": 1.0,
-      "source_hint": "technical specifications (992.2 T-Hybrid)"
+      "conciseness": 1.0
     },
     {
       "id": "Q2",
-      "question": "When was the Porsche 911 (992 generation) introduced?",
       "answer": "The Porsche 911 (992.2) was introduced in [year].",
       "abstained": false,
+      "invalid_abstention": false,
       "grounded_sentence_ratio": 1.0,
       "fact_coverage": 0.0,
-      "hallucination_flags": [
-        "Wrong year: expected 2018"
+      "unsupported_claims": [
+        "year: ~2018"
       ],
       "relevance": 1.0,
       "specificity": 1.0,
       "faithfulness": 1.0,
       "completeness": 1.0,
-      "conciseness": 1.0,
-      "source_hint": "press kit"
+      "conciseness": 0.8
     },
     {
       "id": "Q9",
-      "question": "What was the first air-cooled Porsche 911 model?",
       "answer": "The first air-cooled Porsche 911 model was the 911 SC RS, which was introduced in 1984. It had a power output of 272 PS and was the last 911 unit to feature classic air cooling.",
       "abstained": false,
+      "invalid_abstention": false,
       "grounded_sentence_ratio": 1.0,
       "fact_coverage": 0.3333333333333333,
-      "hallucination_flags": [
-        "Missing years: expected 1963",
-        "Missing years: expected 1998"
+      "unsupported_claims": [
+        "years: ~1963",
+        "years: ~1998"
       ],
       "relevance": 1.0,
       "specificity": 1.0,
       "faithfulness": 1.0,
       "completeness": 1.0,
-      "conciseness": 1.0,
-      "source_hint": "historical overview"
+      "conciseness": 0.8
     },
     {
       "id": "Q10",
-      "question": "How did the 991 generation differ from the 997?",
       "answer": "The Porsche 991 generation differs from the 997 generation in several ways. The 991 is an evolution of the 992, featuring subtle aerodynamic enhancements, revised bumpers, updated lighting signatures, and new wheel designs that contribute to improved efficiency and road presence. It also has a more advanced interior with increased space for passengers and luggage.\n\nIn terms of technical specifications, the 991 generation is powered by a flat-six engine, while the 997 features a naturally aspirated flat-six or a turbocharged flat-six engine. The 991 also has a seven-speed PDK dual-clutch transmission, while the 997 has a six-speed manual or optional PDK dual-clutch transmission.\n\nThe 991 generation is available in various models, including the Carrera, Turbo S, and GT3 RS, with power outputs ranging from 402 hp to 640 hp. The 997, on the other hand, is available in various models, including the Carrera, Turbo S, and GT3 RS, with power outputs ranging from 351 hp to 640 hp.\n\nOverall, while both generations are iconic Porsche models, they differ in terms of design, technology, and technical specifications.",
       "abstained": false,
+      "invalid_abstention": false,
       "grounded_sentence_ratio": 1.0,
       "fact_coverage": 0.0,
-      "hallucination_flags": [
-        "Missing changes: expected longer wheelbase",
-        "Missing changes: expected wider track",
-        "Missing changes: expected turbocharging"
+      "unsupported_claims": [
+        "changes: longer wheelbase",
+        "changes: wider track",
+        "changes: turbocharging"
       ],
-      "relevance": 0.95,
-      "specificity": 0.95,
+      "relevance": 1.0,
+      "specificity": 1.0,
       "faithfulness": 1.0,
-      "completeness": 0.95,
-      "conciseness": 0.85,
-      "source_hint": "generation comparison"
+      "completeness": 1.0,
+      "conciseness": 0.8
     },
     {
       "id": "Q11",
-      "question": "Compare the torque of the 911 GT3 vs GT3 RS.",
       "answer": "The Porsche 911 GT3 and GT3 RS both have a 4.0-liter high-speed naturally-aspirated six-cylinder engine, but their torque values differ. The 911 GT3 produces 520 PS (horsepower) and 520 Nm (pound-feet) of torque, while the 911 GT3 RS produces 520 PS and 540 Nm of torque. Therefore, the 911 GT3 RS has a higher torque output than the standard GT3 model.",
       "abstained": false,
+      "invalid_abstention": false,
       "grounded_sentence_ratio": 1.0,
       "fact_coverage": 0.0,
-      "hallucination_flags": [
-        "Missing/wrong gt3_torque: expected ~346",
-        "Missing/wrong gt3_rs_torque: expected ~342"
+      "unsupported_claims": [
+        "gt3_torque: ~346",
+        "gt3_rs_torque: ~342"
       ],
       "relevance": 1.0,
       "specificity": 1.0,
       "faithfulness": 1.0,
       "completeness": 1.0,
-      "conciseness": 1.0,
-      "source_hint": "technical specifications"
+      "conciseness": 0.9
     },
     {
       "id": "Q12",
-      "question": "What is the fuel economy of the 911 Carrera?",
       "answer": "The fuel consumption combined for the Porsche 911 Carrera (992.2, base) is 8.9 liters per 100 kilometers.",
       "abstained": false,
+      "invalid_abstention": true,
       "grounded_sentence_ratio": 1.0,
       "fact_coverage": 1.0,
-      "hallucination_flags": [],
+      "unsupported_claims": [],
       "relevance": 1.0,
       "specificity": 1.0,
       "faithfulness": 1.0,
       "completeness": 1.0,
-      "conciseness": 1.0,
-      "source_hint": "none (unanswerable)"
+      "conciseness": 0.8
     },
     {
       "id": "Q13",
-      "question": "What transmission options are available for the 911 GTS?",
       "answer": "The Porsche 911 GTS offers several transmission options. It can be equipped with either a standard six-speed manual transmission or an optional dual-clutch transmission (PDK). The PDK allows for quicker gear changes and smoother operation, making it a popular choice among many drivers. Additionally, the 911 GTS also has the option of rear-wheel drive or all-wheel drive, depending on the specific model variant.",
       "abstained": false,
+      "invalid_abstention": false,
       "grounded_sentence_ratio": 0.75,
       "fact_coverage": 1.0,
-      "hallucination_flags": [],
+      "unsupported_claims": [],
       "relevance": 1.0,
       "specificity": 1.0,
       "faithfulness": 1.0,
       "completeness": 1.0,
-      "conciseness": 1.0,
-      "source_hint": "technical specifications"
+      "conciseness": 0.8
     },
     {
       "id": "Q14",
-      "question": "What is the N\u00fcrburgring lap time for the 911 GT2 RS?",
       "answer": "I don't know based on the provided Porsche 911 documents.",
       "abstained": true,
+      "invalid_abstention": false,
       "grounded_sentence_ratio": 1.0,
       "fact_coverage": 0.0,
-      "hallucination_flags": [
-        "Missing/wrong lap_time: expected ~6.43"
+      "unsupported_claims": [
+        "lap_time: ~6.43"
       ],
-      "relevance": 0.0,
-      "specificity": 0.0,
-      "faithfulness": 0.0,
-      "completeness": 0.0,
-      "conciseness": 0.0,
-      "source_hint": "performance records"
+      "relevance": 0.5,
+      "specificity": 0.8,
+      "faithfulness": 0.9,
+      "completeness": 0.7,
+      "conciseness": 0.6
     },
     {
       "id": "Q15",
-      "question": "What are the key design features of the Porsche 911?",
       "answer": "The key design features of the Porsche 911 include its iconic rear-engine layout, low ground clearance, and aerodynamic body shape. The car also features a distinctive front splitter, rear diffuser, and active rear wing for improved downforce and stability at high speeds. Additionally, the 911 features a sport-tuned suspension system, large brake discs, and high-performance tires for exceptional handling and stopping power. Inside, the car boasts a driver-focused cockpit with advanced infotainment and connectivity features, as well as luxurious materials and ergonomic seating.",
       "abstained": false,
+      "invalid_abstention": false,
       "grounded_sentence_ratio": 1.0,
       "fact_coverage": 0.3333333333333333,
-      "hallucination_flags": [
-        "Missing design_features: expected sloping roofline",
-        "Missing design_features: expected round headlights"
+      "unsupported_claims": [
+        "design_features: sloping roofline",
+        "design_features: round headlights"
       ],
       "relevance": 1.0,
       "specificity": 1.0,
       "faithfulness": 1.0,
       "completeness": 1.0,
-      "conciseness": 0.95,
-      "source_hint": "design overview"
+      "conciseness": 0.8
     },
     {
       "id": "Q16",
-      "question": "Does the Porsche 911 come with adaptive cruise control?",
       "answer": "Yes, the Porsche 911 comes with adaptive cruise control as an optionally available safety and assistance system. It can be controlled through the Porsche Communication Management (PCM) system and uses a new steering controller for greater driving pleasure on winding roads. The adaptive cruise control system includes automatic distance control, which is more precise with the lap trigger optionally available through Porsche Tequipment.",
       "abstained": false,
+      "invalid_abstention": false,
       "grounded_sentence_ratio": 1.0,
       "fact_coverage": 1.0,
-      "hallucination_flags": [],
+      "unsupported_claims": [],
       "relevance": 1.0,
       "specificity": 1.0,
       "faithfulness": 1.0,
       "completeness": 1.0,
-      "conciseness": 1.0,
-      "source_hint": "features list"
+      "conciseness": 0.8
     },
     {
       "id": "Q17",
-      "question": "What is the top speed of the Porsche 911 Carrera S?",
       "answer": "The top speed of the Porsche 911 Carrera S (992.2, T-Hybrid) is 308 km/h.",
       "abstained": false,
+      "invalid_abstention": false,
       "grounded_sentence_ratio": 1.0,
-      "fact_coverage": 0.0,
-      "hallucination_flags": [
-        "Missing/wrong top_speed: expected ~191"
-      ],
+      "fact_coverage": 1.0,
+      "unsupported_claims": [],
       "relevance": 1.0,
       "specificity": 1.0,
       "faithfulness": 1.0,
       "completeness": 1.0,
-      "conciseness": 1.0,
-      "source_hint": "technical specifications"
+      "conciseness": 0.8
     }
   ]
 }
