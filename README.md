@@ -41,6 +41,7 @@ atharsayed-der-kurator/
 ├── app.py                # Streamlit client application
 ├── ingest.py             # Ingestion & indexing pipeline
 ├── requirements.txt
+├── .gitignore            # venv & pycache files & other irrelevent files ignored 
 │
 ├── data/
 │   └── raw/              # Raw source documents (PDF, DOCX, TXT, PPTX)
@@ -49,17 +50,20 @@ atharsayed-der-kurator/
 │   └── cleaner.py        # Text cleaning & normalization
 │
 ├── rag/
+│   ├──__init__.py       
 │   ├── prompt.py         # Strict grounding prompt
 │   ├── retriever.py      # FAISS retrieval + filtering
 │   └── qa.py             # Answer gating & orchestration
 │
 ├── evaluation/
+│   ├──__init__.py        
 │   ├── dataset.py        # Evaluation dataset
 │   ├── evaluate.py       # RAG evaluation pipeline
 │   └── results.json      # Stored evaluation results
 │
-└── tests/
-    └── test_retrieval.py # Retrieval correctness tests
+├── tests/
+│   ├──__init__.py  
+    └── test_retrieval.py  # Retrieval correctness tests
 ```
 
 ##  Supported Document Formats
