@@ -132,7 +132,7 @@ Der Kurator implements Retrieval-Augmented Generation (RAG), a modern AI archite
 1. **Document retrieval from curated knowledge sources**, and  
 2. **Large language model (LLM) generation grounded in that retrieval**  
 
-This ensures responses are accurate and traceable to real documents, not fabricated by the model.:contentReference[oaicite:0]{index=0}
+This ensures responses are accurate and traceable to real documents, not fabricated by the model.
 
 ---
 
