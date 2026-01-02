@@ -17,7 +17,7 @@ The system prioritizes **faithfulness, accuracy, and traceability**, making it s
 ---
 
 ---
-##  System Architecture (Overview)
+##  System Architecture
 
 The following diagram illustrates the end-to-end architecture of **Der Kurator**
 
@@ -124,8 +124,6 @@ Der Kurator uses multiple layers of safeguards:
 
 Der Kurator is designed not just to *work*, but to be **verifiable, safe, and reliable**.  
 To ensure this, we adopted a rigorous multi-stage evaluation framework that covers both **retrieval quality** and **answer generation quality**.
-
-### What is RAG?
 
 Der Kurator implements Retrieval-Augmented Generation (RAG), a modern AI architecture that combines:
 
