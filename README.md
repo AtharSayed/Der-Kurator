@@ -1,4 +1,4 @@
-#  Der Kurator — Porsche 911 Knowledge Assistant
+#  Der Kurator : Porsche 911 Knowledge Assistant 
 
 **Der Kurator** is a **document-grounded Retrieval-Augmented Generation (RAG) system** designed to answer **technical, factual, and variant-specific questions about the Porsche 911** using only verified source documents.
 
@@ -6,7 +6,7 @@ The system prioritizes **faithfulness, accuracy, and traceability**, making it s
 
 ---
 
-## Project Goals
+## Project Outcomes 
 
 - Answer questions **strictly from provided documents**
 - Prevent hallucinations and speculative responses
